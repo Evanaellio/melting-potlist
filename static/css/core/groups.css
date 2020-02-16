@@ -1,0 +1,17 @@
+.guild-icon img {
+    border-radius: 64px;
+    transition: border-radius 0.5s;
+    border: 2px solid black;
+    background-color: var(--discord-dark);
+    margin: 10px;
+    width: 128px;
+    height: 128px;
+}
+
+.guild-icon {
+    text-decoration: none !important;
+}
+
+.guild-icon:hover img {
+    border-radius: 32px;
+}

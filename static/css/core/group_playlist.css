@@ -1,0 +1,34 @@
+.option__image {
+    max-height: 80px;
+    margin-right: 10px
+}
+
+.option__desc,
+.option__image {
+    display: inline-block;
+    vertical-align: middle
+}
+
+.option__title {
+    font-size: 24px;
+}
+
+/* Override style for vue-multiselect component */
+
+.multiselect__tag, .multiselect__option--highlight {
+    background: var(--discord-blue);
+}
+
+.multiselect__tags, .multiselect__content-wrapper {
+    background: var(--discord-dark);
+    border: 2px solid var(--discord-black);
+}
+
+.multiselect, .multiselect__tag-icon:focus, .multiselect__tag-icon:hover, .multiselect__option--highlight:after, .multiselect__input, .multiselect__single {
+    color: white;
+    background: none;
+}
+
+.multiselect__tag-icon:after {
+    color: var(--discord-black);
+}
