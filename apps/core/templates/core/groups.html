@@ -8,7 +8,8 @@
     <div class="heading text-center">
         {% for guild in guilds %}
             <a href="{% url 'core:group_playlist' guild_id=guild.id %}" class="guild-icon">
-                <img src="{{ guild.image }}" alt="{{ guild.name }}"/>
+                <img src="{{ guild.image }}" alt="{{ guild.name }}" data-toggle="tooltip"
+                     data-placement="bottom" title="{{ guild.name }}"/>
             </a>
         {% endfor %}
     </div>
