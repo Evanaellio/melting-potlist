@@ -1,0 +1,75 @@
+{% extends "core/navigation.html" %}
+
+{% block css %}
+    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
+    <link rel="stylesheet" href="/static/css/core/group_playlist.css?{% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+    <br/>
+    <h1>{{ title }}</h1>
+    <br/>
+    <div id="app">
+        <vue-multiselect v-model="users.selected"
+                         :hide-selected="true"
+                         :close-on-select="false"
+                         :multiple="true"
+                         :options="users.all"
+                         label="name" track-by="id"
+                         :option-height="60"
+                         placeholder="">
+
+            <template slot="tag" slot-scope="props">
+                <span class="multiselect__tag">
+                    <img class="option__image" :src="getDiscordAvatar(props.option, 16)">
+                    <span>[[ props.option.name ]]</span>
+                    <i aria-hidden="true" tabindex="1" class="multiselect__tag-icon"
+                       @click="props.remove(props.option)"></i>
+                </span>
+            </template>
+            <template slot="option" slot-scope="props">
+                <img class="option__image" :src="getDiscordAvatar(props.option, 32)">
+                <div class="option__desc">
+                    <div class="option__desc">
+                        <span class="option__title">[[ props.option.name ]]</span>
+                    </div>
+                </div>
+            </template>
+        </vue-multiselect>
+        <input type="hidden" name="users" :value="selectedUsers">
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
+    <script>
+        Vue.component('vue-multiselect', window.VueMultiselect.default)
+
+        var app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: {
+                users: {
+                    selected: [],
+                    all: {{ users_json | safe }}
+                },
+            },
+            computed: {
+                selectedUsers: function () {
+                    return this.users.selected.map(item => item.id);
+                }
+            },
+            methods: {
+                getDiscordAvatar: function (user, size) {
+                    return `${user.image}?size=${size}`
+                },
+            },
+        });
+
+        app.users.selected = app.users.all;
+    </script>
+{% endblock %}
