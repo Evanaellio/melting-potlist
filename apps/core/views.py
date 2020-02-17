@@ -1,8 +1,13 @@
 import json
+from urllib.parse import urlparse, parse_qs
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+
 from apps.discord_login.models import DiscordGuild, DiscordUser
+
+from .playlist_generator import generate
 
 
 def home(request):
@@ -25,6 +30,9 @@ def make_user(user: DiscordUser):
     }
 
 
+def get_playlist_id(user: DiscordUser):
+    return parse_qs(urlparse(user.user.settings.core_playlist_url).query)['list'][0]
+
 @login_required
 def groups(request):
     context = {
@@ -42,6 +50,25 @@ def group_playlist(request, guild_id):
     context = {
         'users_json': json.dumps(users),
         'title': f'{guild.name} - New Playlist',
+        'guild_id': guild.id,
     }
 
     return render(request, 'core/group_playlist.html', context)
+
+
+def generate_playlist(request, guild_id):
+    user_ids = set(map(int, request.POST['users'].split(',')))
+    discord_users = DiscordUser.objects.filter(id__in=user_ids).all()
+    all_playlists_ids = list(map(get_playlist_id, discord_users))
+
+    generated_playlists = generate(all_playlists_ids)
+
+    return redirect(f'''{reverse('core:player')}?playlists={','.join(generated_playlists)}''')
+
+
+def player(request):
+    context = {
+        'playlists': request.GET.get('playlists').split(','),
+    }
+
+    return render(request, 'core/player.html', context)
