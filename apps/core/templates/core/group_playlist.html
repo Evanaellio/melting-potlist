@@ -36,7 +36,12 @@
                 </div>
             </template>
         </vue-multiselect>
-        <input type="hidden" name="users" :value="selectedUsers">
+
+        <form method="post" action="{% url 'core:group_playlist_generate' guild_id=guild_id %}" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="users" :value="selectedUsers">
+            <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Generate Playlist</button>
+        </form>
     </div>
 {% endblock %}
 
