@@ -24,6 +24,14 @@
     border: 2px solid var(--discord-black);
 }
 
+.multiselect__content-wrapper {
+    border-top-width: 0;
+}
+
+.multiselect--active > .multiselect__tags {
+    border-color: var(--discord-blue);
+}
+
 .multiselect, .multiselect__tag-icon:focus, .multiselect__tag-icon:hover, .multiselect__option--highlight:after, .multiselect__input, .multiselect__single {
     color: white;
     background: none;

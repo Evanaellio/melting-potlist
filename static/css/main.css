@@ -64,3 +64,18 @@ body {
     background-color: var(--discord-blue);
     border-color: var(--discord-blue);
 }
+
+.form-control, .form-control:focus {
+    color: white;
+    background-color: var(--discord-dark);
+}
+
+.form-control {
+    border: 2px solid var(--discord-black);
+}
+
+.form-control:focus {
+    border-color: var(--discord-blue);
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
