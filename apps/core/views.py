@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from ..discord_login.models import DiscordGuild, DiscordUser
+from apps.discord_login.models import DiscordGuild, DiscordUser
 
 
 def home(request):
@@ -25,7 +25,7 @@ def make_user(user: DiscordUser):
     }
 
 
-@login_required(login_url='discord/login')
+@login_required
 def groups(request):
     context = {
         'guilds': map(make_guild, request.user.discord.guilds.all())
@@ -34,7 +34,7 @@ def groups(request):
     return render(request, 'core/groups.html', context)
 
 
-@login_required(login_url='discord/login')
+@login_required
 def group_playlist(request, guild_id):
     guild = get_object_or_404(DiscordGuild, id=guild_id)
     users = list(map(make_user, guild.users.all()))

@@ -132,5 +132,6 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_REDIRECT_URL = '/groups'
 LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/discord/login'
 
 django_yamlconf.load()
