@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'apps.core',
     'apps.discord_login',
+    'apps.user_profile',
 ]
 
 MIDDLEWARE = [
