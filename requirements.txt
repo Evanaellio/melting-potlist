@@ -6,6 +6,7 @@ chardet==3.0.4
 defusedxml==0.6.0
 Django==3.0.1
 django-yamlconf==1.1.0
+gunicorn==20.0.4
 idna==2.8
 oauthlib==3.1.0
 psycopg2-binary==2.8.4
@@ -20,3 +21,4 @@ typed-ast==1.4.1
 typing-extensions==3.7.4.1
 urllib3==1.25.7
 websockets==6.0
+whitenoise==5.0.1
