@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  melting_potlist:
+    build: .
+    expose:
+      - 8000
+    environment:
+      - VIRTUAL_HOST=melting-potlist.evanaellio.ovh
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
