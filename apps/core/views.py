@@ -33,10 +33,16 @@ def make_user(user: DiscordUser):
 def get_playlist_id(user: DiscordUser):
     return parse_qs(urlparse(user.user.settings.core_playlist_url).query)['list'][0]
 
+
 @login_required
 def groups(request):
+    ready_guilds = sorted(filter(lambda guild: guild.users.count() >= 2, request.user.discord.guilds.all()),
+                          key=lambda guild: guild.users.count(), reverse=True)
+    not_ready_guilds = filter(lambda guild: guild.users.count() < 2, request.user.discord.guilds.all())
+
     context = {
-        'guilds': map(make_guild, request.user.discord.guilds.all())
+        'ready_guilds': list(map(make_guild, ready_guilds)),
+        'not_ready_guilds': list(map(make_guild, not_ready_guilds)),
     }
 
     return render(request, 'core/groups.html', context)
