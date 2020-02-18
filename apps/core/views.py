@@ -11,7 +11,11 @@ from .playlist_generator import generate
 
 
 def home(request):
-    return render(request, 'core/home.html')
+    context = {
+        'missing_core_playlist': request.user.is_authenticated and not request.user.settings.core_playlist_url,
+    }
+
+    return render(request, 'core/home.html', context=context)
 
 
 def make_guild(guild: DiscordGuild):
