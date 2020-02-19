@@ -75,6 +75,7 @@
             },
         });
 
-        app.users.selected = app.users.all;
+        // Select all valid users by default
+        app.users.selected = app.users.all.filter(user => ! user.$isDisabled);
     </script>
 {% endblock %}
