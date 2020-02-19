@@ -31,6 +31,7 @@ def make_user(user: DiscordUser):
         'id': str(user.id),
         'name': user.username,
         'image': user.image,
+        '$isDisabled': not user.user.settings.core_playlist_url,
     }
 
 
