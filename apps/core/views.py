@@ -31,7 +31,6 @@ def make_user(user: DiscordUser):
         'id': str(user.id),
         'name': user.username,
         'image': user.image,
-        '$isDisabled': not user.user.settings.core_playlist_url,
     }
 
 
@@ -56,10 +55,7 @@ def groups(request):
 @login_required
 def group_playlist(request, guild_id):
     guild = get_object_or_404(DiscordGuild, id=guild_id)
-    
-    valid_users = filter(guild.users.all())
-    
-    valid_users = list(map(make_user, guild.users.all()))
+    users = list(map(make_user, guild.users.all()))
 
     context = {
         'users_json': json.dumps(users),
