@@ -1,3 +1,6 @@
+# Ignore collected static files
+staticfiles
+
 # Ignore YAML config file
 melting_potlist.yaml
 
