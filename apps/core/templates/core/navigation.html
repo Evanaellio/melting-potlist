@@ -15,27 +15,40 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-dark bg-dark">
     <a class="navbar-brand" href="{% url 'core:home' %}">Melting Potlist</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'core:groups' %}">Groups</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'user_profile:settings' %}">Settings</a>
-            </li>
-        </ul>
+    {% if user.name %}
+        <a class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"
+           style="border: none">
+            <img src="{{ user.image }}" width="64" height="64" class="rounded-circle">
+        </a>
+    {% else %}
         <a href="{% url 'discord_login:login' %}">
             <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">
-                <span>Login with <img src="/static/discord-logo.svg" alt="Discord Logo"/></span>
+                <span>Login with <img src="{% static 'discord-logo.svg' %}" alt="Discord Logo"/></span>
             </button>
         </a>
+    {% endif %}
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav">
+            <a class="nav-item ml-auto" href="{% url 'core:groups' %}">
+                <button type="button" class="btn btn-labeled btn-outline-primary">
+                    <span class="btn-label"><i class="mdi mdi-queue-music"></i></span>New Playlist
+                </button>
+            </a>
+            <a class="nav-item ml-auto" href="{% url 'user_profile:settings' %}">
+                <button type="button" class="btn btn-labeled btn-outline-secondary">
+                    <span class="btn-label"><i class="mdi mdi-settings"></i></span>Settings
+                </button>
+            </a>
+            <a class="nav-item ml-auto" href="{% url 'discord_login:logout' %}">
+                <button type="button" class="btn btn-labeled btn-outline-danger">
+                    <span class="btn-label"><i class="mdi mdi-exit-to-app"></i></span>Logout
+                </button>
+            </a>
+        </div>
     </div>
 </nav>
 
