@@ -1,9 +1,12 @@
 {% extends "core/navigation.html" %}
 
 {% block content %}
-    {% for playlist in playlists %}
-        <a href=https://www.youtube.com/playlist?list={{ playlist }}&disable_polymer=true>
-            <h1>Playlist part {{ forloop.counter }} </h1>
-        </a>
-    {% endfor %}
+    <br/>
+    <div class="container-fluid">
+        {% for playlist in playlists %}
+            <a href=https://www.youtube.com/playlist?list={{ playlist }}&disable_polymer=true>
+                <h1>Playlist part {{ forloop.counter }} </h1>
+            </a>
+        {% endfor %}
+    </div>
 {% endblock %}

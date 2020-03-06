@@ -8,41 +8,44 @@
 
 {% block content %}
     <br/>
-    <h1>{{ title }}</h1>
-    <br/>
-    <div id="app">
-        <vue-multiselect v-model="users.selected"
-                         :hide-selected="true"
-                         :close-on-select="false"
-                         :multiple="true"
-                         :options="users.all"
-                         label="name" track-by="id"
-                         :option-height="60"
-                         placeholder="">
+    <div class="container-fluid">
+        <h1>{{ title }}</h1>
+        <br/>
+        <div id="app">
+            <vue-multiselect v-model="users.selected"
+                             :hide-selected="true"
+                             :close-on-select="false"
+                             :multiple="true"
+                             :options="users.all"
+                             label="name" track-by="id"
+                             :option-height="60"
+                             placeholder="">
 
-            <template slot="tag" slot-scope="props">
+                <template slot="tag" slot-scope="props">
                 <span class="multiselect__tag">
                     <img class="option__image" :src="getDiscordAvatar(props.option, 16)">
                     <span>[[ props.option.name ]]</span>
                     <i aria-hidden="true" tabindex="1" class="multiselect__tag-icon"
                        @click="props.remove(props.option)"></i>
                 </span>
-            </template>
-            <template slot="option" slot-scope="props">
-                <img class="option__image" :src="getDiscordAvatar(props.option, 32)">
-                <div class="option__desc">
+                </template>
+                <template slot="option" slot-scope="props">
+                    <img class="option__image" :src="getDiscordAvatar(props.option, 32)">
                     <div class="option__desc">
-                        <span class="option__title">[[ props.option.name ]]</span>
+                        <div class="option__desc">
+                            <span class="option__title">[[ props.option.name ]]</span>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </vue-multiselect>
+                </template>
+            </vue-multiselect>
 
-        <form method="post" action="{% url 'core:group_playlist_generate' guild_id=guild_id %}" novalidate>
-            {% csrf_token %}
-            <input type="hidden" name="users" :value="selectedUsers">
-            <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Generate Playlist</button>
-        </form>
+            <br/>
+            <form method="post" action="{% url 'core:group_playlist_generate' guild_id=guild_id %}" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="users" :value="selectedUsers">
+                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Generate Playlist</button>
+            </form>
+        </div>
     </div>
 {% endblock %}
 
@@ -77,6 +80,6 @@
         });
 
         // Select all valid users by default
-        app.users.selected = app.users.all.filter(user => ! user.$isDisabled);
+        app.users.selected = app.users.all.filter(user => !user.$isDisabled);
     </script>
 {% endblock %}
