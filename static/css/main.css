@@ -12,7 +12,9 @@ body {
 }
 
 :root {
-    --discord-blue: #7289DA;
+    --rgb-discord-blue: 114, 137, 218;
+    --discord-blue: rgb(var(--rgb-discord-blue));
+    --discord-blue-opacity: rgba(var(--rgb-discord-blue), 0.5);
     --discord-background: #36393f;
     --discord-dark: #2C2F33;
     --discord-black: #23272A;
@@ -60,9 +62,14 @@ body {
     border-color: var(--discord-blue);
 }
 
-.btn-outline-primary:hover {
-    background-color: var(--discord-blue);
-    border-color: var(--discord-blue);
+.btn-outline-primary:hover, .btn-outline-primary:active {
+    background-color: var(--discord-blue) !important;
+    border-color: var(--discord-blue) !important;
+}
+
+.btn-outline-primary:focus {
+    box-shadow: 0 0 0 0.2rem var(--discord-blue-opacity) !important;
+    -webkit-box-shadow: 0 0 0 0.2rem var(--discord-blue-opacity) !important;
 }
 
 .form-control, .form-control:focus {
