@@ -1,8 +1,9 @@
 {% extends "core/navigation.html" %}
+{% load static %}
 
 {% block css %}
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
-    <link rel="stylesheet" href="/static/css/core/group_playlist.css?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/core/group_playlist.css' %}">
 {% endblock %}
 
 {% block content %}

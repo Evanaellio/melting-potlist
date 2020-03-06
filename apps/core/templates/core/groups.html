@@ -1,7 +1,8 @@
 {% extends "core/navigation.html" %}
+{% load static %}
 
 {% block css %}
-    <link rel="stylesheet" href="/static/css/core/groups.css?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/core/groups.css' %}">
 {% endblock %}
 
 {% block content %}

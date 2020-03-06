@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,600,700,800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/bootstrap-dark.min.css">
-    <link rel="stylesheet" href="/static/css/main.css?{% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-dark.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/material-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block css %}{% endblock %}
     <title>{{ title | default:"Melting Potlist" }}</title>
 </head>
@@ -47,7 +50,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
-<script src="/static/js/script.js"></script>
+<script src="{% static 'js/script.js' %}"></script>
 
 {% block javascript %}{% endblock %}
 
