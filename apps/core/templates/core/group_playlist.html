@@ -43,6 +43,12 @@
             <form method="post" action="{% url 'core:group_playlist_generate' guild_id=guild_id %}" novalidate>
                 {% csrf_token %}
                 <input type="hidden" name="users" :value="selectedUsers">
+                <select class="custom-select mr-sm-2" name="mode">
+                    <option value="youtube">Youtube Playlist</option>
+                    <option value="pls">PLS Playlist (Experimental)</option>
+                </select>
+                <br/>
+                <br/>
                 <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Generate Playlist</button>
             </form>
         </div>

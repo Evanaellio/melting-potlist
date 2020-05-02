@@ -2,12 +2,13 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
 
-from .playlist_generator import generate
+from .playlist_generator import generate_youtube, generate_pls
 
 
 def home(request):
@@ -68,13 +69,19 @@ def group_playlist(request, guild_id):
 
 
 def generate_playlist(request, guild_id):
+    mode = request.POST['mode']
     user_ids = set(map(int, request.POST['users'].split(',')))
     discord_users = DiscordUser.objects.filter(id__in=user_ids).all()
     all_playlists_ids = list(map(get_playlist_id, discord_users))
 
-    generated_playlists = generate(all_playlists_ids)
-
-    return redirect(f'''{reverse('core:player')}?playlists={','.join(generated_playlists)}''')
+    if mode == 'youtube':
+        generated_playlists = generate_youtube(all_playlists_ids)
+        return redirect(f'''{reverse('core:player')}?playlists={','.join(generated_playlists)}''')
+    elif mode == 'pls':
+        generated_pls = generate_pls(all_playlists_ids)
+        response = HttpResponse(generated_pls, content_type="audio/x-scpls")
+        response['Content-Disposition'] = 'inline; filename=playlist.pls'
+        return response
 
 
 def player(request):

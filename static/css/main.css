@@ -72,16 +72,16 @@ body {
     -webkit-box-shadow: 0 0 0 0.2rem var(--discord-blue-opacity) !important;
 }
 
-.form-control, .form-control:focus {
+.form-control, .form-control:focus, .custom-select, .custom-select:focus {
     color: white;
     background-color: var(--discord-dark);
 }
 
-.form-control {
+.form-control, .custom-select {
     border: 2px solid var(--discord-black);
 }
 
-.form-control:focus {
+.form-control:focus, .custom-select:focus {
     border-color: var(--discord-blue);
     -webkit-box-shadow: none;
     box-shadow: none;
