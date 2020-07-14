@@ -112,8 +112,10 @@ def generate_pls(playlists):
 
     pls_list = ['[playlist]']
 
+    pls_url_template = settings.PLS_URL_TEMPLATE.replace('[[', '{').replace(']]', '}')
+
     for i, video_id in enumerate(all_videos, 1):
-        pls_list.append(f'File{i}={settings.PLS_URL_TEMPLATE.format(video_id=video_id)}')
+        pls_list.append(f'File{i}={pls_url_template.format(video_id=video_id)}')
 
     pls_list.append(f'NumberOfEntries={len(all_videos)}')
     pls_list.append(f'Version=2')

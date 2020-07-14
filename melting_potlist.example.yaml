@@ -12,7 +12,7 @@ YOUTUBE_FILLER_VIDEO: ...
 YOUTUBE_PLAYLIST_MIN_LENGTH: 20
 
 # URL template to be used during PLS playlist generation
-PLS_URL_TEMPLATE: https://www.youtube.com/watch?v={video_id}
+PLS_URL_TEMPLATE: https://www.youtube.com/watch?v=[[video_id]]
 
 DATABASES:
   default:
