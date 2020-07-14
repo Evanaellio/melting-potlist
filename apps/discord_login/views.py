@@ -11,10 +11,12 @@ def login(request):
 
 
 def callback(request):
-    code = request.GET.get('code')
-    user = django.contrib.auth.authenticate(request, oauth_code=code)
-    django.contrib.auth.login(request, user)
-    return redirect(settings.LOGIN_REDIRECT_URL)
+    if code := request.GET.get('code'):
+        user = django.contrib.auth.authenticate(request, oauth_code=code)
+        django.contrib.auth.login(request, user)
+        return redirect(settings.LOGIN_REDIRECT_URL)
+    else:
+        return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 def logout(request):
