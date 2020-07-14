@@ -1,5 +1,18 @@
+# https://discord.com/developers/applications/
 DISCORD_CLIENT_ID: ...
 DISCORD_CLIENT_SECRET: ...
+
+# https://developers.google.com/youtube/registering_an_application  (API keys section)
+YOUTUBE_DEVELOPER_KEY: ...
+
+# A youtube video id to be used as filler when someone has less than YOUTUBE_PLAYLIST_MIN_LENGTH videos in their playlist
+YOUTUBE_FILLER_VIDEO: ...
+
+# Set to 0 to disable filler videos
+YOUTUBE_PLAYLIST_MIN_LENGTH: 20
+
+# URL template to be used during PLS playlist generation
+PLS_URL_TEMPLATE: https://www.youtube.com/watch?v={video_id}
 
 DATABASES:
   default:
