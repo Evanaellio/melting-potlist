@@ -57,9 +57,14 @@ body {
     background-color: var(--discord-blue)
 }
 
-.btn-outline-primary {
+.btn-outline-primary, .btn-outline-primary:disabled {
     color: var(--discord-blue);
     border-color: var(--discord-blue);
+}
+
+.btn-outline-primary:hover:disabled {
+    background-color: var(--discord-black) !important;
+    cursor: not-allowed;
 }
 
 .btn-outline-primary:hover, .btn-outline-primary:active {
