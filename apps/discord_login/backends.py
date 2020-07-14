@@ -20,10 +20,9 @@ class DiscordBackend(BaseBackend):
         json_guilds = oauth.get('https://discordapp.com/api/users/@me/guilds').json()
 
         user = self.create_or_update_user(json_user=json_user)
+        guilds = [self.create_or_update_guild(json_guild=json_guild) for json_guild in json_guilds]
 
-        for json_guild in json_guilds:
-            guild = self.create_or_update_guild(json_guild=json_guild)
-            user.discord.guilds.add(guild)
+        user.discord.guilds.set(guilds)
 
         return user
 
