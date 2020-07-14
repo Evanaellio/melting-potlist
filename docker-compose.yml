@@ -7,6 +7,7 @@ services:
       - 8000
     environment:
       - VIRTUAL_HOST=melting-potlist.evanaellio.ovh
+      - LETSENCRYPT_HOST=melting-potlist.evanaellio.ovh
 
 networks:
   default:
