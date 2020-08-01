@@ -76,7 +76,7 @@ def generate_video_list(chosen_playlists, listened_count):
     videos_lists = []
 
     for playlist_id in chosen_playlists:
-        videos = fetch_video_ids(playlist_id)[:10]
+        videos = fetch_video_ids(playlist_id)
         random.shuffle(videos)
         videos.sort(key=lambda v: listened_count[v])
 
