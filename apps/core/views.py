@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from urllib.parse import urlparse, parse_qs
 
 from django.contrib.auth.decorators import login_required
@@ -11,10 +12,36 @@ from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
 
 
+@dataclass
+class Alert:
+    """Class for keeping track of an item in inventory."""
+    message: str
+    link: str = None
+    css_class: str = "alert-primary"
+
+
 def home(request):
-    context = {
-        'missing_core_playlist': request.user.is_authenticated and not request.user.settings.core_playlist_url,
-    }
+    context = {}
+
+    if request.user.is_authenticated:
+        alerts = []
+        if len(request.user.settings.get_enabled_tracks()) == 0:
+            alerts.append(
+                Alert(message="⚠ No tracks available for your profile, please review your playlists configuration",
+                      link=reverse('user_profile:all_playlists'),
+                      css_class='alert-warning'))
+
+        for enabled_playlist in request.user.playlists.filter(enabled=True):
+            deleted_tracks_count = enabled_playlist.user_tracks.filter(track_uri__deleted=True).count()
+
+            if deleted_tracks_count:
+                alerts.append(
+                    Alert(
+                        message=f'''⚠ {deleted_tracks_count} tracks are deleted from your playlist: "{enabled_playlist.title}"''',
+                        link=reverse('user_profile:single_playlist', kwargs={'playlist_id': enabled_playlist.id}),
+                        css_class='alert-danger'))
+
+        context['alerts'] = alerts
 
     return render(request, 'core/home.html', context=context)
 
