@@ -2,7 +2,7 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
@@ -27,17 +27,13 @@ def make_guild(guild: DiscordGuild):
     }
 
 
-def make_user(user: DiscordUser):
+def make_user(discord_user: DiscordUser):
     return {
-        'id': str(user.id),
-        'name': user.username,
-        'image': user.image,
-        '$isDisabled': not user.user.settings.core_playlist_url,
+        'id': str(discord_user.id),
+        'name': discord_user.username,
+        'image': discord_user.image,
+        '$isDisabled': len(discord_user.user.settings.get_enabled_tracks()) == 0,
     }
-
-
-def get_playlist_id(user: DiscordUser):
-    return parse_qs(urlparse(user.user.settings.core_playlist_url).query)['list'][0]
 
 
 @login_required
@@ -61,24 +57,33 @@ def group_playlist(request, guild_id):
 
     context = {
         'users_json': json.dumps(users),
-        'title': f'{guild.name} - New Playlist',
+        'title': guild.name,
         'guild_id': guild.id,
     }
 
     return render(request, 'core/group_playlist.html', context)
 
 
+@login_required
 def generate_playlist(request, guild_id):
+    try:
+        guild = request.user.discord.guilds.get(id=guild_id)
+    except DiscordGuild.DoesNotExist:
+        raise Http404()
+
     mode = request.POST['mode']
     user_ids = set(map(int, request.POST['users'].split(',')))
-    discord_users = DiscordUser.objects.filter(id__in=user_ids).all()
-    all_playlists_ids = list(map(get_playlist_id, discord_users))
+    selected_users = list(map(lambda discord_user: discord_user.user, guild.users.filter(id__in=user_ids)))
+
+    for user in selected_users:
+        for enabled_playlist in user.playlists.filter(enabled=True):
+            enabled_playlist.synchronize()
 
     if mode == 'youtube':
-        generated_playlists = generate_youtube(all_playlists_ids)
+        generated_playlists = generate_youtube(selected_users)
         return redirect(f'''{reverse('core:player')}?playlists={','.join(generated_playlists)}''')
     elif mode == 'pls':
-        generated_pls = generate_pls(all_playlists_ids)
+        generated_pls = generate_pls(selected_users)
         response = HttpResponse(generated_pls, content_type="audio/x-scpls")
         response['Content-Disposition'] = 'inline; filename=playlist.pls'
         return response

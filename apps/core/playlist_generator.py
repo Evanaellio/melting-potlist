@@ -1,53 +1,12 @@
 import random
 from itertools import islice
+from typing import List
 
 import requests
-from collections import Counter
-
-from googleapiclient.discovery import build
-
 from django.conf import settings
+from django.contrib.auth.models import User
 
-
-def fetch_all_youtube_videos(playlist_id):
-    """
-    Fetches a playlist of videos from youtube
-    We splice the results together in no particular order
-
-    Parameters:
-        parm1 - (string) playlistId
-    Returns:
-        playListItem Dict
-    """
-    youtube = build(serviceName="youtube", version="v3", developerKey=settings.YOUTUBE_DEVELOPER_KEY)
-
-    res = youtube.playlistItems().list(
-        part="snippet",
-        playlistId=playlist_id,
-        maxResults="50"
-    ).execute()
-
-    next_page_token = res.get('nextPageToken')
-    while 'nextPageToken' in res:
-        nextPage = youtube.playlistItems().list(
-            part="snippet",
-            playlistId=playlist_id,
-            maxResults="50",
-            pageToken=next_page_token
-        ).execute()
-        res['items'] = res['items'] + nextPage['items']
-
-        if 'nextPageToken' not in nextPage:
-            res.pop('nextPageToken', None)
-        else:
-            next_page_token = nextPage['nextPageToken']
-
-    return res
-
-
-def fetch_video_ids(playlist_id):
-    items = fetch_all_youtube_videos(playlist_id)["items"]
-    return list(map(lambda item: item["snippet"]["resourceId"]["videoId"], items))
+from apps.user_profile.uri_converter import UriParser
 
 
 def split_every(n, iterable):
@@ -63,22 +22,21 @@ def make_playlists(videos):
 
     for fifty_or_less_videos in split_every(50, videos):
         url = "http://www.youtube.com/watch_videos?video_ids=" + ",".join(fifty_or_less_videos)
-        print(url)
         r = requests.get(url)
         playlists.append(r.url)
 
     return playlists
 
 
-def generate_video_list(chosen_playlists, listened_count):
-    random.shuffle(chosen_playlists)
+def generate_video_list(selected_users: List[User]):
+    random.shuffle(selected_users)
 
     videos_lists = []
 
-    for playlist_id in chosen_playlists:
-        videos = fetch_video_ids(playlist_id)[:10]
+    for user in selected_users:
+        videos = list(map(lambda user_track: UriParser(user_track.track_uri.uri).resource_id,
+                          user.settings.get_enabled_tracks()))
         random.shuffle(videos)
-        videos.sort(key=lambda v: listened_count[v])
 
         while len(videos) < settings.YOUTUBE_PLAYLIST_MIN_LENGTH:
             videos.append(settings.YOUTUBE_FILLER_VIDEO)
@@ -98,17 +56,13 @@ def generate_video_list(chosen_playlists, listened_count):
 delimiter = "&list="
 
 
-def generate_youtube(playlists):
-    count = Counter()
-
-    all_videos = generate_video_list(playlists, count)
+def generate_youtube(selected_users: List[User]):
+    all_videos = generate_video_list(selected_users)
     return map(lambda pl: pl[pl.find(delimiter) + len(delimiter):], make_playlists(all_videos))
 
 
 def generate_pls(playlists):
-    count = Counter()
-
-    all_videos = generate_video_list(playlists, count)
+    all_videos = generate_video_list(playlists)
 
     pls_list = ['[playlist]']
 
