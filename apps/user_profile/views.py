@@ -31,7 +31,7 @@ def make_playlist(user_playlist: UserPlaylist):
         'enabled': user_playlist.enabled,
         'url': UriParser(user_playlist.uri).url,
         'last_synchronized': naturaltime(user_playlist.last_synchronized),
-        'last_track_added': naturaltime(last_3_tracks[0].date_added),
+        'last_track_added': naturaltime(last_3_tracks[0].date_added) if last_3_tracks else None,
         'recent_tracks': map(make_track, last_3_tracks)
     }
 
