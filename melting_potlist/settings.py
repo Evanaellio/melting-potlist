@@ -133,7 +133,7 @@ AUTHENTICATION_BACKENDS = [
     'apps.discord_login.backends.DiscordBackend',
 ]
 
-LOGIN_REDIRECT_URL = '/groups'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/discord/login'
 
