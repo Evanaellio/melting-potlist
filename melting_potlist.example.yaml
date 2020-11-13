@@ -17,6 +17,22 @@ YOUTUBE_PLAYLIST_MIN_LENGTH: 20
 # URL template to be used during PLS playlist generation
 PLS_URL_TEMPLATE: https://www.youtube.com/watch?v=[[video_id]]
 
+# Enable HTML in error logs
+LOGGING.handlers.mail_admins.include_html: True
+
+# Admin emails config
+ADMINS:
+  - [ "John Doe Admin", "john.doe.admin@example.com" ]
+
+# Sender email for error emails
+SERVER_EMAIL: Melting Potlist Error <melting.potlist.error@domain.com>
+
+# SMTP configuration
+EMAIL_HOST: smtp.domain.com
+EMAIL_PORT: 12345
+EMAIL_HOST_USER: user@domain.com
+EMAIL_HOST_PASSWORD: ...
+
 DATABASES:
   default:
     ENGINE: django.db.backends.postgresql
