@@ -1,9 +1,11 @@
 # Ignore collected static files
 staticfiles
 
-# Ignore YAML config file
+# Ignore YAML config file containing secrets
 melting_potlist.yaml
 
+# Ignore docker-compose containing secrets
+docker-compose.yaml
 
 # Created by https://www.gitignore.io/api/linux,macos,django,python,windows,pycharm+all,virtualenv,visualstudiocode,visualstudio
 # Edit at https://www.gitignore.io/?templates=linux,macos,django,python,windows,pycharm+all,virtualenv,visualstudiocode,visualstudio
