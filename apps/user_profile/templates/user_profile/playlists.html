@@ -72,21 +72,13 @@
             <div class="card text-white"
                  style="border-color: var(--discord-black); border-width: medium;{% if not playlist.enabled %} opacity: 40%; {% endif %}">
                 <div class="card-header">
-                    {% if playlist.enabled %}
-                        <a href="{% url 'user_profile:toggle_playlist' playlist_id=playlist.id %}"
-                           class="btn btn-primary position-absolute" style="right: 0; top: 0">
-                            <i class="mdi mdi-radio-button-checked"></i>
-                        </a>
-                    {% else %}
-                        <a href="{% url 'user_profile:toggle_playlist' playlist_id=playlist.id %}"
-                           class="btn btn-secondary position-absolute" style="opacity: 100%; right: 0; top: 0">
-                            <i class="mdi mdi-radio-button-unchecked"></i>
-                        </a>
-                    {% endif %}
                     <a class="h5 card-title text-white text-break"
                        href="{% url 'user_profile:single_playlist' playlist_id=playlist.id %}">
                         {{ playlist.title }}
                     </a>
+                    <input class="form-check-input mr-2" type="checkbox" {% if playlist.enabled %}checked{% endif %}
+                           onclick="window.location.href = '{% url 'user_profile:toggle_playlist' playlist_id=playlist.id %}';"
+                           style="width: 1.7em; height: 1.7em; margin: 0; right: 0;">
                 </div>
                 <div class="container">
                     <a class="row" href="{{ playlist.url }}">
@@ -105,7 +97,9 @@
                     </a>
                     <small class="text-white text-break">Last synchronized {{ playlist.last_synchronized }}</small>
                     <a data-target="#deletePlaylistModal" data-toggle="modal" style="float: right;"
-                       data-delete-path="{% url "user_profile:delete_playlist" playlist_id=playlist.id %}" href="">
+                       data-delete-path="{% url "user_profile:delete_playlist" playlist_id=playlist.id %}"
+                       data-modal-title="Delete &quot;{{ playlist.title }}&quot;"
+                       href="">
                         <i style="font-size: 2em; color: #dc3545; vertical-align: middle;"
                            class="mdi mdi-delete-forever"></i>
                     </a>
@@ -121,14 +115,17 @@
 
 {% block javascript %}
     <script type="text/javascript">
-        $('#deletePlaylistModal').on('show.bs.modal', function (event) {
-            let deletePath = $(event.relatedTarget).data('deletePath');
-            var modal = $(this)
-            modal.find('#deletePlaylistForm').attr('action', deletePath);
+        let deletePlaylistModal = document.querySelector('#deletePlaylistModal');
+        let deletePlaylistForm = document.querySelector('#deletePlaylistForm');
+        let deletePlayListModalHeader = deletePlaylistModal.querySelector('.modal-title')
+
+        deletePlaylistModal.addEventListener('show.bs.modal', function (event) {
+            deletePlaylistForm.setAttribute('action', event.relatedTarget.dataset.deletePath);
+            deletePlayListModalHeader.firstChild.nodeValue = event.relatedTarget.dataset.modalTitle;
         })
 
         function onSynchronize(button) {
-            $(button).find('.mdi').attr("class", "spinner-border");
+            button.querySelector('.mdi').setAttribute('class', 'spinner-border');
         }
 
     </script>

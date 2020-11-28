@@ -17,6 +17,10 @@
 
 {% block javascript %}
 
+    <!-- The last place where jQuery is used, hopefully bootstrap-table gets rid of it soon -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
     <script src="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.js"></script>
 
     <script type="text/javascript">
@@ -51,8 +55,6 @@
             }
             return {};
         }
-
-        o
 
     </script>
 {% endblock %}
