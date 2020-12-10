@@ -99,12 +99,15 @@ def generate_playlist(request, guild_id):
         raise Http404()
 
     mode = request.POST['mode']
+    sync = 'nosync' not in request.POST
+
     user_ids = set(map(int, request.POST['users'].split(',')))
     selected_users = list(map(lambda discord_user: discord_user.user, guild.users.filter(id__in=user_ids)))
 
-    for user in selected_users:
-        for enabled_playlist in user.playlists.filter(enabled=True):
-            enabled_playlist.synchronize()
+    if sync:
+        for user in selected_users:
+            for enabled_playlist in user.playlists.filter(enabled=True):
+                enabled_playlist.synchronize()
 
     if mode == 'youtube':
         generated_playlists = generate_youtube(selected_users)
