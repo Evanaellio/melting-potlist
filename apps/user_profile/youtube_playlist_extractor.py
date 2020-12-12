@@ -42,7 +42,7 @@ def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
 
     response = requests.get(playlist_url, headers=headers)
     response_text = response.text
-    match = re.search(r'\s*window\["ytInitialData"\] = (.*);', response_text)
+    match = re.search(r'var ytInitialData = ([^;]*);', response_text)
 
     parsed = json.loads(match.group(1))
 
