@@ -32,6 +32,25 @@ def make_track_uri(video_renderer):
     return track_uri
 
 
+def extract_video_renderers(parsed_json, continuation: bool = False):
+    if continuation:
+        contents = parsed_json[1]["response"]["onResponseReceivedActions"][0]["appendContinuationItemsAction"][
+            "continuationItems"]
+    else:
+        contents = parsed_json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"][0]["tabRenderer"]["content"] \
+            ["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"][0]["playlistVideoListRenderer"] \
+            ["contents"]
+
+    continuation_token = None
+
+    if "continuationItemRenderer" in contents[-1]:
+        continuation_token = contents[-1]["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"] \
+            ["token"]
+        del contents[-1]
+
+    return map(lambda item: item["playlistVideoRenderer"], contents), continuation_token
+
+
 def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
     playlist_url = UriParser(user_playlist.uri).url
 
@@ -46,22 +65,18 @@ def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
 
     parsed = json.loads(match.group(1))
 
-    videolist_renderer = parsed["contents"]["twoColumnBrowseResultsRenderer"]["tabs"][0]["tabRenderer"]["content"] \
-        ["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"][0]["playlistVideoListRenderer"]
+    video_renderers_page, continuation_token = extract_video_renderers(parsed)
 
     video_renderers = []
 
-    video_renderers.extend(map(lambda item: item["playlistVideoRenderer"], videolist_renderer["contents"]))
+    video_renderers.extend(video_renderers_page)
 
-    while "continuations" in videolist_renderer:
-        continuation = videolist_renderer["continuations"][0]["nextContinuationData"]["continuation"]
-
-        continue_response = requests.get(f"https://www.youtube.com/browse_ajax?continuation={continuation}",
+    while continuation_token:
+        continue_response = requests.get(f"https://www.youtube.com/browse_ajax?continuation={continuation_token}",
                                          headers=headers).json()
 
-        videolist_renderer = continue_response[1]["response"]["continuationContents"]["playlistVideoListContinuation"]
-
-        video_renderers.extend(map(lambda item: item["playlistVideoRenderer"], videolist_renderer["contents"]))
+        video_renderers_page, continuation_token = extract_video_renderers(continue_response, continuation=True)
+        video_renderers.extend(video_renderers_page)
 
     all_track_uris = []
 
