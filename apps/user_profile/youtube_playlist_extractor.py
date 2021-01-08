@@ -15,17 +15,16 @@ def make_track_uri(video_renderer):
         uri=f'youtube:video:{video_renderer["videoId"]}',
     )
 
-    if 'no_thumbnail.jpg' in video_renderer['thumbnail']['thumbnails'][0]['url']:
-        track_uri.deleted = True
-    else:
-        if not track_uri.track:
-            artist_without_topic = re.sub(' - topic$', '', video_renderer['shortBylineText']['runs'][0]['text'])
+    track_uri.deleted = 'no_thumbnail.jpg' in video_renderer['thumbnail']['thumbnails'][0]['url']
 
-            track_uri.track = Track.objects.create(
-                title=video_renderer['title']['runs'][0]['text'],
-                artist=artist_without_topic,
-                duration=timedelta(seconds=int(video_renderer['lengthSeconds'])),
-            )
+    if not track_uri.deleted and not track_uri.track:
+        artist_without_topic = re.sub(' - topic$', '', video_renderer['shortBylineText']['runs'][0]['text'])
+
+        track_uri.track = Track.objects.create(
+            title=video_renderer['title']['runs'][0]['text'],
+            artist=artist_without_topic,
+            duration=timedelta(seconds=int(video_renderer['lengthSeconds'])),
+        )
 
     track_uri.save()
 
