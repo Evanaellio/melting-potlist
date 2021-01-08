@@ -59,6 +59,7 @@ def make_user(discord_user: DiscordUser):
         'id': str(discord_user.id),
         'name': discord_user.username,
         'image': discord_user.image,
+        'default_image': discord_user.default_image,
         '$isDisabled': len(discord_user.user.settings.get_enabled_tracks()) == 0,
     }
 

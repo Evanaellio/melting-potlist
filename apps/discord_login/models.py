@@ -32,5 +32,9 @@ class DiscordUser(models.Model):
             icon_ext = 'gif' if self.avatar.startswith('a_') else 'png'
             image = f'https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.{icon_ext}'
         else:
-            image = f'https://cdn.discordapp.com/embed/avatars/{self.discriminator % 5}.png'
+            image = self.default_image
         return image
+
+    @property
+    def default_image(self):
+        return f'https://cdn.discordapp.com/embed/avatars/{int(self.discriminator) % 5}.png'

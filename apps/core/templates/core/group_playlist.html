@@ -21,14 +21,18 @@
 
             <template slot="tag" slot-scope="props">
                 <span class="multiselect__tag">
-                    <img class="option__image" :src="getDiscordAvatar(props.option, 16)">
+                    <img class="option__image" :src="getDiscordAvatar(props.option, 16)" height="16" width="16"
+                         :data-default-image="props.option.default_image"
+                         onerror="this.src = this.dataset.defaultImage">
                     <span>[[ props.option.name ]]</span>
                     <i aria-hidden="true" tabindex="1" class="multiselect__tag-icon"
                        @click="props.remove(props.option)"></i>
                 </span>
             </template>
             <template slot="option" slot-scope="props">
-                <img class="option__image" :src="getDiscordAvatar(props.option, 32)">
+                <img class="option__image" :src="getDiscordAvatar(props.option, 32)" height="32" width="32"
+                     :data-default-image="props.option.default_image"
+                     onerror="this.src = this.dataset.defaultImage">
                 <div class="option__desc">
                     <div class="option__desc">
                         <span class="option__title">[[ props.option.name ]]</span>
