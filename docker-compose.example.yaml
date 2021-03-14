@@ -6,7 +6,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=...
     volumes:
-      - ...:/var/lib/postgresql/data
+      - ...:/var/lib/postgresql/data  # Specify local path to PostgreSQL data folder
     restart: always
   melting_potlist:
     depends_on:
@@ -18,7 +18,7 @@ services:
       - VIRTUAL_HOST=melting-potlist.domain.com
       - LETSENCRYPT_HOST=melting-potlist.domain.com
     volumes:
-      - ...:/usr/src/app/melting_potlist.yaml
+      - ...:/usr/src/app/melting_potlist.yaml   # Specify local path to the config file (use melting_potlist.example.yaml as starting point)
 
 networks:
   default:
