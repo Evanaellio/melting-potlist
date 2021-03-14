@@ -17,6 +17,8 @@ services:
     environment:
       - VIRTUAL_HOST=melting-potlist.domain.com
       - LETSENCRYPT_HOST=melting-potlist.domain.com
+    volumes:
+      - ...:/usr/src/app/melting_potlist.yaml
 
 networks:
   default:
