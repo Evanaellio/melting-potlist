@@ -1,0 +1,6 @@
+# Ignore files containing sensitive information 
+docker-compose.yaml
+melting_potlist.yaml
+
+# Ignore git metadata
+.git
