@@ -10,7 +10,7 @@
           integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,600,700,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/bootstrap-dark.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/material-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block css %}{% endblock %}
     <title>{{ title | default:"Melting Potlist" }}</title>
@@ -37,17 +37,17 @@
         <div class="navbar-nav">
             <a class="nav-item ml-auto" href="{% url 'core:groups' %}">
                 <button type="button" class="btn btn-labeled btn-outline-primary">
-                    Generate Playlist<span class="btn-label"><i class="mdi mdi-queue-music"></i></span>
+                    Generate Playlist<span class="btn-label"><i class="bi bi-speaker"></i></span>
                 </button>
             </a>
             <a class="nav-item ml-auto" href="{% url 'user_profile:all_playlists' %}">
                 <button type="button" class="btn btn-labeled btn-outline-info">
-                    My playlists<span class="btn-label"><i class="mdi mdi-settings"></i></span>
+                    My playlists<span class="btn-label"><i class="bi bi-music-note-list"></i></span>
                 </button>
             </a>
             <a class="nav-item ml-auto" href="{% url 'discord_login:logout' %}">
                 <button type="button" class="btn btn-labeled btn-outline-danger">
-                    Logout<span class="btn-label"><i class="mdi mdi-exit-to-app"></i></span>
+                    Logout<span class="btn-label"><i class="bi bi-box-arrow-right"></i></span>
                 </button>
             </a>
         </div>
