@@ -38,13 +38,23 @@
                 {title: "Title", field: "title", sortable: true, searchable: true},
                 {title: "Artist", field: "artist", sortable: true, searchable: true},
                 {title: "Duration", field: "duration", sortable: true, searchable: false},
-                {title: "Added", field: "added", sortable: true, searchable: false},
+                {
+                    title: "Added",
+                    field: "date_added",
+                    formatter: "dateAddedNaturalFormatter",
+                    sortable: true,
+                    searchable: false
+                },
             ],
             data: tableData
         })
 
         function imageFormatter(value, row) {
             return `<a href="${row.url}"><img src=${value} style="object-fit: cover; height: 45px; width: 80px"></a>`
+        }
+
+        function dateAddedNaturalFormatter(value, row) {
+            return row.date_added_natural;
         }
 
         function rowStyle(row, index) {

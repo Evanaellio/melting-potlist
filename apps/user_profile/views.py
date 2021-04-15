@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import List
 from urllib.parse import urlparse, parse_qs
@@ -48,7 +49,8 @@ def make_track(user_track: UserTrack):
         "url": uri_parser.url,
         "thumbnail": uri_parser.thumbnail,
         "duration": duration_to_str(track_uri.track.duration) if track_uri.track else "0:00",
-        "added": naturalday(user_track.date_added),
+        "date_added_natural": naturalday(user_track.date_added),
+        "date_added": datetime.timestamp(user_track.date_added),
         "deleted": track_uri.deleted,
     }
 
