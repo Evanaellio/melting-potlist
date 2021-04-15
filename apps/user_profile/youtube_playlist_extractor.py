@@ -1,86 +1,50 @@
-import json
 import re
 from datetime import timedelta
 
 from django.utils import timezone
 
-import requests
-
 from apps.user_profile.models import UserPlaylist, Track, TrackUri, UserTrack
 from .uri_converter import UriParser
 
+import youtube_dl
 
-def make_track_uri(video_renderer):
+YTDL_OPTS = {
+    'ignoreerrors': True,
+    'quiet': True,
+}
+
+
+def make_track_uri(video):
     track_uri, track_uri_created = TrackUri.objects.get_or_create(
-        uri=f'youtube:video:{video_renderer["videoId"]}',
+        uri=f'youtube:video:{video["id"]}',
     )
 
-    track_uri.deleted = 'no_thumbnail.jpg' in video_renderer['thumbnail']['thumbnails'][0]['url']
-
-    if not track_uri.deleted and not track_uri.track:
-        artist_without_topic = re.sub(' - topic$', '', video_renderer['shortBylineText']['runs'][0]['text'])
+    if not track_uri.track:
+        artist_without_topic = re.sub(' - [Tt]opic$', '', video['uploader'])
 
         track_uri.track = Track.objects.create(
-            title=video_renderer['title']['runs'][0]['text'],
+            title=video['title'],
             artist=artist_without_topic,
-            duration=timedelta(seconds=int(video_renderer['lengthSeconds'])),
+            duration=timedelta(seconds=int(video['duration'])),
         )
 
+    # Reset deleted flag in case video was flagged as deleted because it was private but is now public again
+    track_uri.deleted = False
     track_uri.save()
 
     return track_uri
 
 
-def extract_video_renderers(parsed_json, continuation: bool = False):
-    if continuation:
-        contents = parsed_json[1]["response"]["onResponseReceivedActions"][0]["appendContinuationItemsAction"][
-            "continuationItems"]
-    else:
-        contents = parsed_json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"][0]["tabRenderer"]["content"] \
-            ["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"][0]["playlistVideoListRenderer"] \
-            ["contents"]
-
-    continuation_token = None
-
-    if "continuationItemRenderer" in contents[-1]:
-        continuation_token = contents[-1]["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"] \
-            ["token"]
-        del contents[-1]
-
-    return map(lambda item: item["playlistVideoRenderer"], contents), continuation_token
-
-
 def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
     playlist_url = UriParser(user_playlist.uri).url
 
-    headers = {
-        'x-youtube-client-name': "1",
-        'x-youtube-client-version': "2.20200609.04.01"
-    }
-
-    response = requests.get(playlist_url, headers=headers)
-    response_text = response.text
-    match = re.search(r'var ytInitialData = ([^;]*);', response_text)
-
-    parsed = json.loads(match.group(1))
-
-    video_renderers_page, continuation_token = extract_video_renderers(parsed)
-
-    video_renderers = []
-
-    video_renderers.extend(video_renderers_page)
-
-    while continuation_token:
-        continue_response = requests.get(f"https://www.youtube.com/browse_ajax?continuation={continuation_token}",
-                                         headers=headers).json()
-
-        video_renderers_page, continuation_token = extract_video_renderers(continue_response, continuation=True)
-        video_renderers.extend(video_renderers_page)
+    with youtube_dl.YoutubeDL(YTDL_OPTS) as ytdl:
+        playlist_infos = ytdl.extract_info(playlist_url, download=False, process=False)
 
     all_track_uris = []
 
-    for renderer in video_renderers:
-        track_uri = make_track_uri(renderer)
+    for video in playlist_infos['entries']:
+        track_uri = make_track_uri(video)
         user_track, user_track_created = UserTrack.objects.get_or_create(
             track_uri=track_uri,
             user_playlist=user_playlist,
@@ -88,9 +52,17 @@ def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
         )
         all_track_uris.append(track_uri)
 
-    # Delete records that previously belonged to the playlist but have since been removed
-    UserTrack.objects.filter(user_playlist=user_playlist).exclude(track_uri__in=all_track_uris).delete()
+    # Manage records that are missing from the current version of the playlist
+    for missing_track in UserTrack.objects.filter(user_playlist=user_playlist).exclude(track_uri__in=all_track_uris):
+        with youtube_dl.YoutubeDL(YTDL_OPTS) as ytdl:
+            video_info = ytdl.extract_info(UriParser(missing_track.track_uri.uri).url, download=False, process=False)
 
-    user_playlist.title = parsed['metadata']['playlistMetadataRenderer']['title']
+        if not video_info:  # If the video was removed from Youtube
+            missing_track.track_uri.deleted = True  # Flag as deleted but keep it in the user's playlist
+            missing_track.track_uri.save()
+        else:
+            missing_track.delete()  # Delete from the user's playlist
+
+    user_playlist.title = playlist_infos['title']
 
     return user_playlist
