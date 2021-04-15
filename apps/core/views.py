@@ -1,14 +1,13 @@
 import json
 from dataclasses import dataclass
-from urllib.parse import urlparse, parse_qs
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
-
 from .playlist_generator import generate_youtube, generate_pls
 
 
@@ -44,6 +43,14 @@ def home(request):
         context['alerts'] = alerts
 
     return render(request, 'core/home.html', context=context)
+
+
+def about(request):
+    context = {
+        'version': f'v{settings.VERSION}'
+    }
+
+    return render(request, 'core/about.html', context=context)
 
 
 def make_guild(guild: DiscordGuild):

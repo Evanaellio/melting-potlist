@@ -1,0 +1,14 @@
+{% extends "core/navigation.html" %}
+
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">About</h1>
+        <p class="lead">Crafted with love by <a href="https://github.com/Evanaellio/">Evanaellio</a></p>
+        <p class="lead">Source code available on <a href="https://github.com/Evanaellio/melting-potlist">
+            <i class="bi bi-github"></i> GitHub</a></p>
+        <p class="lead">Current version :
+            <a href="https://github.com/Evanaellio/melting-potlist/releases/tag/{{ version }}">{{ version }}</a></p>
+    </div>
+
+{% endblock %}

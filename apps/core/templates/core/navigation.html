@@ -41,8 +41,13 @@
                 </button>
             </a>
             <a class="nav-item ml-auto" href="{% url 'user_profile:all_playlists' %}">
-                <button type="button" class="btn btn-labeled btn-outline-info">
+                <button type="button" class="btn btn-labeled btn-outline-secondary">
                     My playlists<span class="btn-label"><i class="bi bi-music-note-list"></i></span>
+                </button>
+            </a>
+            <a class="nav-item ml-auto" href="{% url 'core:about' %}">
+                <button type="button" class="btn btn-labeled btn-outline-info">
+                    About<span class="btn-label"><i class="bi bi-question-square"></i></span>
                 </button>
             </a>
             <a class="nav-item ml-auto" href="{% url 'discord_login:logout' %}">
