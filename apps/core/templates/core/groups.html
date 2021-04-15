@@ -11,8 +11,8 @@
             <h1>Ready to play</h1>
             {% for guild in ready_guilds %}
                 <a href="{% url 'core:group_playlist' guild_id=guild.id %}" class="guild-icon">
-                    <img src="{{ guild.image }}" alt="{{ guild.name }}" data-toggle="tooltip"
-                         data-placement="bottom" title="{{ guild.name }}"/>
+                    <img src="{{ guild.image }}" alt="{{ guild.name }}" data-bs-toggle="tooltip"
+                         data-bs-placement="bottom" title="{{ guild.name }}"/>
                 </a>
             {% endfor %}
         {% endif %}
@@ -20,10 +20,20 @@
             <h1>Not yet ready</h1>
             {% for guild in not_ready_guilds %}
                 <a href="{% url 'core:group_playlist' guild_id=guild.id %}" class="guild-icon">
-                    <img src="{{ guild.image }}" alt="{{ guild.name }}" data-toggle="tooltip"
-                         data-placement="bottom" title="{{ guild.name }}"/>
+                    <img src="{{ guild.image }}" alt="{{ guild.name }}" data-bs-toggle="tooltip"
+                         data-bs-placement="bottom" title="{{ guild.name }}"/>
                 </a>
             {% endfor %}
         {% endif %}
     </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        // Enable tooltips for this page
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
 {% endblock %}
