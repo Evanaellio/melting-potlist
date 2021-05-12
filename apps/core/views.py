@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from dataclasses import dataclass
 
 from django.conf import settings
@@ -119,7 +120,8 @@ def generate_playlist(request, guild_id):
 
     if mode == 'youtube':
         generated_playlists = generate_youtube(selected_users)
-        return redirect(f'''{reverse('core:player')}?playlists={','.join(generated_playlists)}''')
+        query = urllib.parse.urlencode({'playlists': ','.join(generated_playlists)})
+        return redirect(f"{reverse('core:player')}?{query}")
     elif mode == 'pls':
         generated_pls = generate_pls(selected_users)
         response = HttpResponse(generated_pls, content_type="audio/x-scpls")
