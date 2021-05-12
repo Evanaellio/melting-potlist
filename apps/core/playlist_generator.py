@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 
 from apps.user_profile.uri_converter import UriParser
 
+import urllib.parse
+
 
 def split_every(n, iterable):
     i = iter(iterable)
@@ -23,7 +25,9 @@ def make_playlists(videos):
     for fifty_or_less_videos in split_every(50, videos):
         url = "http://www.youtube.com/watch_videos?video_ids=" + ",".join(fifty_or_less_videos)
         r = requests.get(url)
-        playlists.append(r.url)
+
+        # Decode URL of form https://consent.youtube.com/ml?continue=https://www.youtube.com/watch?...
+        playlists.append(urllib.parse.parse_qs(urllib.parse.urlparse(r.url).query)['continue'][0])
 
     return playlists
 
@@ -58,7 +62,7 @@ delimiter = "&list="
 
 def generate_youtube(selected_users: List[User]):
     all_videos = generate_video_list(selected_users)
-    return map(lambda pl: pl[pl.find(delimiter) + len(delimiter):], make_playlists(all_videos))
+    return make_playlists(all_videos)
 
 
 def generate_pls(playlists):
