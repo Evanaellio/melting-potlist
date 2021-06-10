@@ -5,7 +5,7 @@ cachetools==4.2.1
 certifi==2020.12.5
 chardet==4.0.0
 defusedxml==0.7.1
-Django==3.2
+Django==3.2.4
 django-annoying==0.10.6
 django-widget-tweaks==1.4.8
 django-yamlconf==1.4.0
