@@ -36,6 +36,6 @@ typed-ast==1.4.3
 typing-extensions==3.7.4.3
 uritemplate==3.0.1
 urllib3==1.26.4
-websockets==8.1
+websockets==9.1
 whitenoise==5.2.0
 youtube-dl==2021.4.7
