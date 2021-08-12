@@ -5,12 +5,12 @@ cachetools==4.2.1
 certifi==2020.12.5
 chardet==4.0.0
 defusedxml==0.7.1
-Django==3.2
+Django==3.2.6
 django-annoying==0.10.6
 django-widget-tweaks==1.4.8
 django-yamlconf==1.4.0
 google-api-core==1.26.3
-google-api-python-client==2.2.0
+google-api-python-client==2.15.0
 google-auth==1.29.0
 google-auth-httplib2==0.1.0
 googleapis-common-protos==1.53.0
@@ -35,7 +35,7 @@ sqlparse==0.4.1
 typed-ast==1.4.3
 typing-extensions==3.7.4.3
 uritemplate==3.0.1
-urllib3==1.26.4
-websockets==8.1
+urllib3==1.26.6
+websockets==9.1
 whitenoise==5.2.0
-youtube-dl==2021.4.7
+youtube-dl==2021.6.6
