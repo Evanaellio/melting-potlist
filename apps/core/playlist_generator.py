@@ -26,8 +26,13 @@ def make_playlists(videos):
         url = "http://www.youtube.com/watch_videos?video_ids=" + ",".join(fifty_or_less_videos)
         r = requests.get(url)
 
+        query_string = urllib.parse.parse_qs(urllib.parse.urlparse(r.url).query)
+
         # Decode URL of form https://consent.youtube.com/ml?continue=https://www.youtube.com/watch?...
-        playlists.append(urllib.parse.parse_qs(urllib.parse.urlparse(r.url).query)['continue'][0])
+        if 'continue' in query_string:
+            playlists.append(query_string['continue'][0])
+        else:
+            playlists.append(r.url)
 
     return playlists
 
