@@ -8,6 +8,8 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
+import datetime
+
 from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
 
@@ -135,3 +137,20 @@ def player(request):
     }
 
     return render(request, 'core/player.html', context)
+
+
+def subtitles(request):
+    duration = datetime.timedelta(seconds=int(request.GET.get('duration')))
+
+    ending_start_delta = duration - datetime.timedelta(seconds=15)
+    ending_end_delta = duration - datetime.timedelta(seconds=5)
+    ending_start = '{0:02d}:{1:02d}'.format(*divmod(ending_start_delta.seconds, 60))
+    ending_end = '{0:02d}:{1:02d}'.format(*divmod(ending_end_delta.seconds, 60))
+
+    context = {
+        'ending_start': ending_start,
+        'ending_end': ending_end,
+        'title': request.GET.get('title'),
+    }
+
+    return render(request, 'core/subtitles.webvtt', context, content_type="text/vtt")

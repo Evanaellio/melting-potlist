@@ -1,0 +1,7 @@
+WEBVTT
+
+00:10.000 --> 00:20.000
+{{ title }}
+
+{{ ending_start }}.000 --> {{ ending_end }}.000
+{{ title }}
