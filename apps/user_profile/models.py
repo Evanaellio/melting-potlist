@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from annoying.fields import AutoOneToOneField
@@ -8,6 +7,8 @@ from django.db import models
 from django.utils import timezone
 
 from django.db.models.constraints import UniqueConstraint
+
+from apps.discord_login.models import DiscordGuild
 
 
 class Track(models.Model):
@@ -52,11 +53,24 @@ class UserPlaylist(models.Model):
 class UserTrack(models.Model):
     track_uri = models.ForeignKey(TrackUri, on_delete=models.CASCADE, related_name='user_tracks')
     user_playlist = models.ForeignKey(UserPlaylist, on_delete=models.CASCADE, related_name='user_tracks')
+    listeners = models.ManyToManyField(User, through="UserTrackListenStats", related_name='listened_tracks')
     date_added = models.DateTimeField()
 
     class Meta:
         constraints = [
             UniqueConstraint(fields=['track_uri', 'user_playlist'], name='unique_track_uri_user_playlist'),
+        ]
+
+
+class UserTrackListenStats(models.Model):
+    user_track = models.ForeignKey(UserTrack, on_delete=models.CASCADE, related_name='user_track_listen_stats')
+    listener = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_track_listen_stats')
+    date_last_listened = models.DateTimeField(default=timezone.now)
+    listen_count = models.IntegerField(default=1)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['user_track', 'listener'], name='unique_user_track_listener'),
         ]
 
 
@@ -66,3 +80,25 @@ class UserSettings(models.Model):
     def get_enabled_tracks(self) -> List[UserTrack]:
         enabled_playlists = self.user.playlists.filter(enabled=True)
         return list(UserTrack.objects.filter(user_playlist__in=enabled_playlists, track_uri__deleted=False))
+
+
+class DynamicPlaylist(models.Model):
+    date_generated = models.DateTimeField(default=timezone.now)
+    tracks = models.ManyToManyField(UserTrack, related_name='dynamic_playlists')
+    groups = models.ManyToManyField(DiscordGuild, related_name='dynamic_playlists')
+    users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
+    title = models.TextField(default="Unnamed dynamic playlist")
+
+
+class DynamicPlaylistUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    dynamic_playlist = models.ForeignKey(DynamicPlaylist, on_delete=models.CASCADE,
+                                         related_name='dynamic_playlist_users')
+    is_author = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    played_in_rotation = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['user', 'dynamic_playlist'], name='unique_user_dynamic_playlist'),
+        ]
