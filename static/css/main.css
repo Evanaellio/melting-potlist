@@ -131,3 +131,8 @@ body {
         transform: rotate(360deg);
     }
 }
+
+.form-check-input:checked {
+    background-color: var(--discord-blue);
+    border-color: var(--discord-blue);
+}
