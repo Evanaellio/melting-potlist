@@ -1,3 +1,4 @@
+import datetime
 import json
 import urllib.parse
 from dataclasses import dataclass
@@ -7,8 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-
-import datetime
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
@@ -61,28 +60,47 @@ def make_guild(guild: DiscordGuild):
         'name': guild.name,
         'id': guild.id,
         'image': guild.image,
+        'is_ready': guild.is_ready,
+        'users_ready_count': len(guild.users_ready)
     }
-
 
 def make_user(discord_user: DiscordUser):
     return {
         'id': str(discord_user.id),
         'name': discord_user.username,
-        'image': discord_user.image,
+        'image': discord_user.image + '?size=32',
+        'small_image': discord_user.image + '?size=16',
         'default_image': discord_user.default_image,
-        '$isDisabled': len(discord_user.user.settings.get_enabled_tracks()) == 0,
+    }
+
+
+def make_multiselect_user(discord_user: DiscordUser):
+    is_user_ready = discord_user.is_ready
+
+    multiselect_user = make_user(discord_user)
+    multiselect_user['$isDisabled'] = not is_user_ready
+    multiselect_user['inInitialSelection'] = is_user_ready
+
+    return multiselect_user
+
+
+def make_multiselect_guild(guild: DiscordGuild):
+    return {
+        'id': str(guild.id),
+        'name': guild.name,
+        'image': guild.image + '?size=32',
+        'small_image': guild.image + '?size=16',
+        'default_image': guild.default_image,
+        '$isDisabled': not guild.is_ready,
     }
 
 
 @login_required
 def groups(request):
-    ready_guilds = sorted(filter(lambda guild: guild.users.count() >= 2, request.user.discord.guilds.all()),
-                          key=lambda guild: guild.users.count(), reverse=True)
-    not_ready_guilds = filter(lambda guild: guild.users.count() < 2, request.user.discord.guilds.all())
-
+    user_guilds = list(map(make_guild, request.user.discord.guilds.all()))
+    user_guilds.sort(key=lambda guild: guild['users_ready_count'], reverse=True)
     context = {
-        'ready_guilds': list(map(make_guild, ready_guilds)),
-        'not_ready_guilds': list(map(make_guild, not_ready_guilds)),
+        'user_guilds': user_guilds,
     }
 
     return render(request, 'core/groups.html', context)
@@ -91,7 +109,7 @@ def groups(request):
 @login_required
 def group_playlist(request, guild_id):
     guild = get_object_or_404(DiscordGuild, id=guild_id)
-    users = list(map(make_user, guild.users.all()))
+    users = list(map(make_multiselect_user, guild.users.all()))
 
     context = {
         'users_json': json.dumps(users),
