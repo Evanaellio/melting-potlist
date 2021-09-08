@@ -38,4 +38,4 @@ uritemplate==3.0.1
 urllib3==1.26.4
 websockets==8.1
 whitenoise==5.2.0
-youtube-dl==2021.4.7
+yt-dlp==2021.8.10

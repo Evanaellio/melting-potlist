@@ -6,7 +6,7 @@ from django.utils import timezone
 from apps.user_profile.models import UserPlaylist, Track, TrackUri, UserTrack
 from .uri_converter import UriParser
 
-import youtube_dl
+import yt_dlp
 
 YTDL_OPTS = {
     'ignoreerrors': True,
@@ -38,7 +38,7 @@ def make_track_uri(video):
 def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
     playlist_url = UriParser(user_playlist.uri).url
 
-    with youtube_dl.YoutubeDL(YTDL_OPTS) as ytdl:
+    with yt_dlp.YoutubeDL(YTDL_OPTS) as ytdl:
         playlist_infos = ytdl.extract_info(playlist_url, download=False, process=False)
 
     all_track_uris = []
@@ -54,7 +54,7 @@ def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
 
     # Manage records that are missing from the current version of the playlist
     for missing_track in UserTrack.objects.filter(user_playlist=user_playlist).exclude(track_uri__in=all_track_uris):
-        with youtube_dl.YoutubeDL(YTDL_OPTS) as ytdl:
+        with yt_dlp.YoutubeDL(YTDL_OPTS) as ytdl:
             video_info = ytdl.extract_info(UriParser(missing_track.track_uri.uri).url, download=False, process=False)
 
         if not video_info:  # If the video was removed from Youtube
