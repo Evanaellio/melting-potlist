@@ -15,7 +15,6 @@ from .playlist_generator import generate_youtube, generate_pls
 
 @dataclass
 class Alert:
-    """Class for keeping track of an item in inventory."""
     message: str
     link: str = None
     css_class: str = "alert-primary"
@@ -60,16 +59,19 @@ def make_guild(guild: DiscordGuild):
         'name': guild.name,
         'id': guild.id,
         'image': guild.image,
+        'default_image': guild.default_image,
         'is_ready': guild.is_ready,
         'users_ready_count': len(guild.users_ready)
     }
+
 
 def make_user(discord_user: DiscordUser):
     return {
         'id': str(discord_user.id),
         'name': discord_user.username,
-        'image': discord_user.image + '?size=32',
-        'small_image': discord_user.image + '?size=16',
+        'image': discord_user.image,
+        'image_16': discord_user.image + '?size=16',
+        'image_32': discord_user.image + '?size=32',
         'default_image': discord_user.default_image,
     }
 
@@ -88,8 +90,9 @@ def make_multiselect_guild(guild: DiscordGuild):
     return {
         'id': str(guild.id),
         'name': guild.name,
-        'image': guild.image + '?size=32',
-        'small_image': guild.image + '?size=16',
+        'image': guild.image,
+        'image_16': guild.image + '?size=16',
+        'image_32': guild.image + '?size=32',
         'default_image': guild.default_image,
         '$isDisabled': not guild.is_ready,
     }

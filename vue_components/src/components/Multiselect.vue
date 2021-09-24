@@ -9,7 +9,7 @@
             <span class="multiselect__tag">
                 <img
                     class="option__image"
-                    :src="props.option.small_image"
+                    :src="props.option.image_16"
                     height="16"
                     width="16"
                     :data-default-image="props.option.default_image"
@@ -27,7 +27,7 @@
         <template v-slot:option="props">
             <img
                 class="option__image"
-                :src="props.option.image"
+                :src="props.option.image_32"
                 height="32"
                 width="32"
                 :data-default-image="props.option.default_image"
