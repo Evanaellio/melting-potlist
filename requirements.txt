@@ -9,6 +9,7 @@ Django==3.2
 django-annoying==0.10.6
 django-widget-tweaks==1.4.8
 django-yamlconf==1.4.0
+djangorestframework==3.12.4
 google-api-core==1.26.3
 google-api-python-client==2.2.0
 google-auth==1.29.0
