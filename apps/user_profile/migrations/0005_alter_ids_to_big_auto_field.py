@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0005_add_dynamic_playlists_and_track_stats'),
+        ('user_profile', '0004_remove_usersettings_core_playlist_url'),
     ]
 
     operations = [

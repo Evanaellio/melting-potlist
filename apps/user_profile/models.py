@@ -1,5 +1,6 @@
 from typing import List
 
+import django
 from annoying.fields import AutoOneToOneField
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -84,7 +85,7 @@ class UserSettings(models.Model):
 
 class DynamicPlaylist(models.Model):
     date_generated = models.DateTimeField(default=timezone.now)
-    tracks = models.ManyToManyField(UserTrack, related_name='dynamic_playlists')
+    tracks = models.ManyToManyField(UserTrack, related_name='dynamic_playlists', through="DynamicPlaylistTrack")
     groups = models.ManyToManyField(DiscordGuild, related_name='dynamic_playlists')
     users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
     title = models.TextField(default="Unnamed dynamic playlist")
@@ -102,3 +103,10 @@ class DynamicPlaylistUser(models.Model):
         constraints = [
             UniqueConstraint(fields=['user', 'dynamic_playlist'], name='unique_user_dynamic_playlist'),
         ]
+
+
+class DynamicPlaylistTrack(models.Model):
+    track = models.ForeignKey(UserTrack, on_delete=models.CASCADE)
+    dynamic_playlist = models.ForeignKey(DynamicPlaylist, on_delete=models.CASCADE,
+                                         related_name='dynamic_playlist_tracks')
+    played = models.DateTimeField(default=django.utils.timezone.now)
