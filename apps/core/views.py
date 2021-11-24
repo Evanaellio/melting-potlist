@@ -5,12 +5,14 @@ from dataclasses import dataclass
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
+from ..user_profile.models import DynamicPlaylist
 
 
 @dataclass
@@ -175,3 +177,50 @@ def subtitles(request):
     }
 
     return render(request, 'core/subtitles.webvtt', context, content_type="text/vtt")
+
+
+@login_required
+def create_dynamic_playlist(request, guild_id):
+    guild = get_object_or_404(DiscordGuild, id=guild_id)
+    users = list(map(make_multiselect_user, guild.users.all()))
+
+    context = {
+        'json_context': json.dumps({
+            'users': users,
+            'guild_id': str(guild_id),
+        }),
+        'title': guild.name,
+    }
+
+    return render(request, 'core/create_dynamic_playlist.html', context)
+
+
+@login_required
+def play_dynamic_playlist(request, playlist_id):
+    playlist = DynamicPlaylist.objects.get(id=playlist_id)
+
+    if playlist.users.get(dynamicplaylistuser__is_author=True) != request.user:
+        raise PermissionDenied("Only the author of a playlist can play it (for now)")
+
+    if playlist.groups.exists():
+        users = list(map(lambda discord_user: make_multiselect_user(discord_user),
+                         DiscordUser.objects.filter(guilds__in=playlist.groups.all())))
+    else:
+        users = list(map(lambda user: make_multiselect_user(user.discord), playlist.users.all()))
+
+    active_users = list(
+        map(lambda user: str(user.discord.id), playlist.users.filter(dynamicplaylistuser__is_active=True)))
+
+    for multiselect_user in users:
+        multiselect_user["inInitialSelection"] = \
+            multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
+
+    context = {
+        'json_context': json.dumps({
+            'users': users,
+            'playlistId': playlist.id,
+        }),
+        'title': f"Playlist - {playlist.title}",
+    }
+
+    return render(request, 'core/play_dynamic_playlist.html', context)
