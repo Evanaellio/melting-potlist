@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django_yamlconf',
     'rest_framework',
     'widget_tweaks',
+    'webpack_loader',
     'apps.core',
     'apps.discord_login',
     'apps.user_profile',
@@ -142,6 +143,14 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': DEBUG,
+        'BUNDLE_DIR_NAME': '/bundles/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'vue_components', 'webpack-stats.json'),
+    }
+}
 
 AUTHENTICATION_BACKENDS = [
     'apps.discord_login.backends.DiscordBackend',

@@ -7,6 +7,7 @@ chardet==4.0.0
 defusedxml==0.7.1
 Django==3.2
 django-annoying==0.10.6
+django-webpack-loader==1.0.0
 django-widget-tweaks==1.4.8
 django-yamlconf==1.4.0
 djangorestframework==3.12.4
