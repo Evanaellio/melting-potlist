@@ -140,6 +140,7 @@ STATIC_URL = '/content/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    BASE_DIR / "vue_components" / "dist", # Static resources compiled by vue service build (using Webpack)
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

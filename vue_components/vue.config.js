@@ -4,7 +4,7 @@ const DEV_HOST = process.env.DEV_HOST ?? 'localhost';
 const VUE_DEV_PORT = process.env.VUE_DEV_PORT ?? '8080';
 
 module.exports = {
-    publicPath: process.env.NODE_ENV === 'production' ? '/' : `http://${DEV_HOST}:${VUE_DEV_PORT}`,
+    publicPath: process.env.NODE_ENV === 'production' ? '/content' : `http://${DEV_HOST}:${VUE_DEV_PORT}`,
     runtimeCompiler: true,
 
     chainWebpack: config => {
