@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 import django
@@ -83,12 +84,97 @@ class UserSettings(models.Model):
         return list(UserTrack.objects.filter(user_playlist__in=enabled_playlists, track_uri__deleted=False))
 
 
+def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count) -> float:
+    now = django.utils.timezone.now()
+    weight = 1.0
+
+    # Increase weight for each user that never listened to the track
+    for i in range(active_users_count - len(track_statistics)):
+        weight *= 10
+
+    for track_stat in track_statistics:
+        delta = now - track_stat.date_last_listened
+        total_hours = delta.days * 24 + (delta.seconds / 3600)
+
+        if delta.days > 31:
+            weight *= 5
+        elif delta.days > 5:
+            pass  # Don't change weight
+        elif total_hours > 2:
+            weight *= 0.1
+        else:
+            return 0
+    return weight
+
+
 class DynamicPlaylist(models.Model):
     date_generated = models.DateTimeField(default=timezone.now)
     tracks = models.ManyToManyField(UserTrack, related_name='dynamic_playlists', through="DynamicPlaylistTrack")
     groups = models.ManyToManyField(DiscordGuild, related_name='dynamic_playlists')
     users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
     title = models.TextField(default="Unnamed dynamic playlist")
+
+    def persist_track_and_find_next(self, track_id_to_persist, next_track_count=1) -> List[UserTrack]:
+        active_users = list(self.dynamic_playlist_users.filter(is_active=True))
+
+        # Don't persist anything if playlist is not affected to any group (solo music discovery mode)
+        if self.groups.exists() and track_id_to_persist:
+            persisted_track = UserTrack.objects.get(id=track_id_to_persist)
+
+            # Update (or create) listening stats for active users
+            for active_user in active_users:
+                listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
+                    listener=active_user.user,
+                    user_track=persisted_track
+                )
+
+                if not listen_stats_created:
+                    listen_stats.listen_count += 1
+                    listen_stats.date_last_listened = django.utils.timezone.now()
+                    listen_stats.save()
+
+            # Save track to dynamic playlist's list of tracks
+            DynamicPlaylistTrack.objects.create(
+                dynamic_playlist=self,
+                track=persisted_track
+            )
+
+            # Mark the user that provided the persisted track as played in current rotation
+            persisted_track_user: DynamicPlaylistUser = self.dynamic_playlist_users.get(
+                user=persisted_track.user_playlist.user)
+            persisted_track_user.played_in_rotation = True
+            persisted_track_user.save()
+
+        if not active_users:
+            return None
+
+        # Must reiterate database query to avoid conserving cached values before updates
+        active_users = list(self.dynamic_playlist_users.filter(is_active=True))
+        users_still_in_rotation = list(filter(lambda user: not user.played_in_rotation, active_users))
+
+        # Start a new rotation if all users have finished the current rotation
+        if not users_still_in_rotation:
+            # Don't reset rotation when user is alone
+            if len(active_users) > 1:
+                for user in active_users:
+                    user.played_in_rotation = False
+                    user.save()
+            users_still_in_rotation = active_users
+
+        chosen_user = random.choice(users_still_in_rotation)
+        all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
+
+        statistics = list(UserTrackListenStats.objects.filter(user_track__in=all_tracks, listener__in=map(
+            lambda dyn_playlist_user: dyn_playlist_user.user, active_users)))
+
+        if self.groups.exists():
+            weights = []
+            for user_track in all_tracks:
+                filtered_stats = list(filter(lambda stat: stat.user_track == user_track, statistics))
+                weights.append(compute_weight_from_track_stats(filtered_stats, len(active_users)))
+            return list(random.choices(all_tracks, k=next_track_count, weights=weights))
+        else:
+            return list(random.choices(all_tracks, k=next_track_count))
 
 
 class DynamicPlaylistUser(models.Model):
