@@ -9,19 +9,19 @@
     <div class="heading text-center">
         <h1>Discord groups</h1>
         {% for guild in user_guilds %}
-        <a href="{% url 'core:group_playlist' guild_id=guild.id %}" class="guild-icon"
-           {% if not guild.is_ready %} style="opacity:20%; cursor: not-allowed;" {% endif %}>
-            <img src="{{ guild.image }}" alt="{{ guild.name }}" data-bs-toggle="tooltip"
-                 data-default-image="{{ guild.default_image }}"
-                 onerror="this.src = this.dataset.defaultImage"
-                 data-bs-placement="bottom" data-bs-html="true"
-                 {% if guild.is_ready %}
-                 title="{{ guild.name }}<br>{{ guild.users_ready_count }} DJs ready to party 🥳"
-                 {% else %}
-                 title="{{ guild.name }}<br>Nobody here except you 😟"
-                 {% endif %}
-            />
-        </a>
+            <a href="{% url 'core:create_dynamic_playlist' guild_id=guild.id %}" class="guild-icon"
+                    {% if not guild.is_ready %} style="opacity:20%; cursor: not-allowed;" {% endif %}>
+                <img src="{{ guild.image }}" alt="{{ guild.name }}" data-bs-toggle="tooltip"
+                     data-default-image="{{ guild.default_image }}"
+                     onerror="this.src = this.dataset.defaultImage"
+                     data-bs-placement="bottom" data-bs-html="true"
+                        {% if guild.is_ready %}
+                     title="{{ guild.name }}<br>{{ guild.users_ready_count }} curators ready to share some music 🥳"
+                        {% else %}
+                     title="{{ guild.name }}<br>Nobody here except you 😟"
+                        {% endif %}
+                />
+            </a>
         {% endfor %}
     </div>
 {% endblock %}
