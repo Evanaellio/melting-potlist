@@ -211,6 +211,12 @@ def play_dynamic_playlist(request, playlist_id):
     active_users = list(
         map(lambda user: str(user.discord.id), playlist.users.filter(dynamicplaylistuser__is_active=True)))
 
+    # Synchronize active users playlists before playing (except in solo mode)
+    if playlist.groups.exists():
+        for active_user in playlist.users.filter(dynamicplaylistuser__is_active=True):
+            for enabled_playlist in active_user.playlists.filter(enabled=True):
+                enabled_playlist.synchronize()
+
     for multiselect_user in users:
         multiselect_user["inInitialSelection"] = \
             multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
