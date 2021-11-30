@@ -1,7 +1,7 @@
 <template>
   <div v-if="currentMedia">
     <video
-      v-show="!audioOnly && !isDashVideo"
+      v-show="!audioOnly"
       ref="video_player"
       id="video-player"
       muted
@@ -18,18 +18,6 @@
         :src="currentMedia.subtitles_url"
       />
     </video>
-
-    <div v-if="isDashVideo">
-      <br />
-      <a
-        href="https://github.com/Evanaellio/melting-potlist/issues/28"
-        target="_blank"
-      >
-        <p style="color: red">
-          <i>DASH-MPEG video not yet supported</i>
-        </p>
-      </a>
-    </div>
 
     <audio
       ref="audio_player"
@@ -103,13 +91,6 @@ export default {
       mediaPlayingInterval: null,
       mediaInProgress: false
     };
-  },
-  computed: {
-    isDashVideo: function() {
-      return this.currentMedia.video.startsWith(
-        "https://manifest.googlevideo.com/"
-      );
-    }
   },
   methods: {
     syncAudioAndVideo() {

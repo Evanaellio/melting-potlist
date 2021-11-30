@@ -1,3 +1,4 @@
+import json
 from typing import List
 from urllib.parse import quote
 
@@ -20,6 +21,15 @@ YTDL_OPTS = {
 }
 
 
+def is_valid_video_format(song_format):
+    if 'vbr' not in song_format:
+        return False
+
+    try:
+        return song_format["fragments"][0]["path"].startswith("range")
+    except (KeyError, IndexError):
+        return True
+
 def fetch_media(media_url):
     with yt_dlp.YoutubeDL(YTDL_OPTS) as ydl:
         media = ydl.extract_info(media_url, download=False, process=False)
@@ -38,14 +48,14 @@ def fetch_media(media_url):
     # Get best audio format (most audio bitrate)
     audio = max(audio_formats, key=lambda fmt: fmt['abr'])
 
-    video_formats = list(filter(lambda fmt: 'vbr' in fmt, song_formats))
+    video_formats = list(filter(is_valid_video_format, song_formats))
 
     # Get video closest to 1080p
     video = min(video_formats, key=lambda fmt: abs(fmt['width'] - 1080))
 
     return {
-        'audio': audio['url'],
-        'video': video['url'],
+        'audio': audio['url'] if 'manifest_url' not in audio else audio['fragment_base_url'],
+        'video': video['url'] if 'manifest_url' not in video else video['fragment_base_url'],
         'title': title,
         'artist': artist,
         'duration': duration,
