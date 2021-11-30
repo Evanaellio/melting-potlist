@@ -103,7 +103,7 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
         elif total_hours > 2:
             weight *= 0.1
         else:
-            return 0
+            weight *= 0.000001
     return weight
 
 
