@@ -226,7 +226,7 @@ def play_dynamic_playlist(request, playlist_id):
             'users': users,
             'playlistId': playlist.id,
         }),
-        'title': f"Playlist - {playlist.title}",
+        'title': f"🎵 {playlist.title}",
     }
 
     return render(request, 'core/play_dynamic_playlist.html', context)
