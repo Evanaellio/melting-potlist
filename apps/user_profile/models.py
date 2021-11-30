@@ -115,16 +115,20 @@ class DynamicPlaylist(models.Model):
     title = models.TextField(default="Unnamed dynamic playlist")
 
     def persist_track_and_find_next(self, track_id_to_persist, next_track_count=1) -> List[UserTrack]:
+        is_group_mode = self.groups.exists()
+        playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
 
-        # Don't persist anything if playlist is not affected to any group (solo music discovery mode)
-        if self.groups.exists() and track_id_to_persist:
+        if not active_users:
+            return []
+
+        if track_id_to_persist:
             persisted_track = UserTrack.objects.get(id=track_id_to_persist)
 
-            # Update (or create) listening stats for active users
-            for active_user in active_users:
+            # Update (or create) listening stats for active users (in group mode) or playlist author (in solo mode)
+            for listening_user in (active_users if is_group_mode else [playlist_author]):
                 listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
-                    listener=active_user.user,
+                    listener=listening_user.user,
                     user_track=persisted_track
                 )
 
@@ -145,9 +149,6 @@ class DynamicPlaylist(models.Model):
             persisted_track_user.played_in_rotation = True
             persisted_track_user.save()
 
-        if not active_users:
-            return None
-
         # Must reiterate database query to avoid conserving cached values before updates
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
         users_still_in_rotation = list(filter(lambda user: not user.played_in_rotation, active_users))
@@ -164,17 +165,19 @@ class DynamicPlaylist(models.Model):
         chosen_user = random.choice(users_still_in_rotation)
         all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
 
-        statistics = list(UserTrackListenStats.objects.filter(user_track__in=all_tracks, listener__in=map(
-            lambda dyn_playlist_user: dyn_playlist_user.user, active_users)))
-
-        if self.groups.exists():
-            weights = []
-            for user_track in all_tracks:
-                filtered_stats = list(filter(lambda stat: stat.user_track == user_track, statistics))
-                weights.append(compute_weight_from_track_stats(filtered_stats, len(active_users)))
-            return list(random.choices(all_tracks, k=next_track_count, weights=weights))
+        if is_group_mode:
+            users_listening = list(map(lambda dyn_playlist_user: dyn_playlist_user.user, active_users))
         else:
-            return list(random.choices(all_tracks, k=next_track_count))
+            users_listening = [playlist_author.user]
+
+        statistics = list(UserTrackListenStats.objects.filter(user_track__in=all_tracks, listener__in=users_listening))
+
+        weights = []
+        for user_track in all_tracks:
+            filtered_stats = list(filter(lambda stat: stat.user_track == user_track, statistics))
+            weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening)))
+
+        return list(random.choices(all_tracks, k=next_track_count, weights=weights))
 
 
 class DynamicPlaylistUser(models.Model):

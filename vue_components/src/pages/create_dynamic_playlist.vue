@@ -47,9 +47,14 @@
       <div class="form-text">Who will listen along ?</div>
     </div>
 
-    <div v-if="groupMode === 'solo'">
-      Playlist and listening stats won't be saved for a solo music discovery
-      session
+    <div class="mb-3">
+      <div v-if="groupMode === 'solo'">
+        Solo session : playlist and listening stats will only be saved for you
+      </div>
+      <div v-if="groupMode === 'group'">
+        Group session : playlist and listening stats will be saved for every
+        user who provides some music
+      </div>
     </div>
 
     <div class="mb-3" v-if="groupMode === 'group'">
