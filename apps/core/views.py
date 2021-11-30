@@ -197,7 +197,7 @@ def create_dynamic_playlist(request, guild_id):
 
 @login_required
 def play_dynamic_playlist(request, playlist_id):
-    playlist = DynamicPlaylist.objects.get(id=playlist_id)
+    playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
     if playlist.users.get(dynamicplaylistuser__is_author=True) != request.user:
         raise PermissionDenied("Only the author of a playlist can play it (for now)")

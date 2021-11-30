@@ -42,6 +42,12 @@ def extract_tracks(user_playlist: UserPlaylist) -> UserPlaylist:
     with yt_dlp.YoutubeDL(YTDL_OPTS) as ytdl:
         playlist_infos = ytdl.extract_info(playlist_url, download=False, process=False)
 
+    if not playlist_infos:
+        user_playlist.title = "⚠️ Invalid or private playlist"
+        user_playlist.enabled = False
+        user_playlist.save()
+        return user_playlist
+
     all_track_uris = []
 
     for video in playlist_infos['entries']:

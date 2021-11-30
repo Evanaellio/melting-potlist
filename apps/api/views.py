@@ -3,6 +3,8 @@ from urllib.parse import quote
 
 import yt_dlp
 from django.contrib.auth.models import User
+from django.core.exceptions import BadRequest
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import viewsets, permissions, parsers, status
 from rest_framework.response import Response
@@ -56,7 +58,7 @@ class DynamicPlaylistUsers(APIView):
     parser_classes = (parsers.JSONParser,)
 
     def patch(self, request, playlist_id, user_id, format=None):
-        dynamic_playlist = DynamicPlaylist.objects.get(id=playlist_id)
+        dynamic_playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
         # Check rights to modify playlist
         playlist_author = DynamicPlaylistUser.objects.get(dynamic_playlist=dynamic_playlist, is_author=True).user
@@ -77,10 +79,13 @@ class DynamicPlaylistUsers(APIView):
 class PersistAndNext(APIView):
 
     def post(self, request, playlist_id, format=None):
-        playlist = DynamicPlaylist.objects.get(id=playlist_id)
+        playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
         next_user_track_candidates: List[UserTrack] = playlist.persist_track_and_find_next(
             request.data["trackToPersist"], 5)
+
+        if not next_user_track_candidates:
+            raise BadRequest('No active user in playlist')
 
         for i in range(5):
             next_user_track = next_user_track_candidates[i]
