@@ -65,13 +65,6 @@ export default {
         }
       });
     },
-    // fetchNextSong() {
-    //   console.log("fetching next with playlist : " + this.playlistId);
-    //   fetch(`/api/dynamicplaylists/${this.playlistId}/persist_and_next`)
-    //     .then(response => response.json())
-    //     .then(jsonData => (this.nextMedia = jsonData))
-    //     .catch(reason => console.error(reason));
-    // },
     persistPlayedSongAndFetchNext(playedSongId = null) {
       if (playedSongId !== null) {
         this.currentMediaPersisted = true;
