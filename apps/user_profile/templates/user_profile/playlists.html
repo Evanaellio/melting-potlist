@@ -86,6 +86,8 @@
                             <div class="col-4" style="padding: 0;">
                                 <img src="{{ track.thumbnail }}" title="{{ track.title }}" width="100%">
                             </div>
+                        {% empty %}
+                            <span style="height: 72px">{{ playlist.url }}</span>
                         {% endfor %}
                     </a>
                 </div>
