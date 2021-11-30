@@ -35,9 +35,13 @@ class DynamicPlaylistSerializer(serializers.ModelSerializer):
         return ret
 
     def create(self, validated_data):
-        authenticated_user = self.context['request'].user
+        authenticated_user: User = self.context['request'].user
         users = validated_data.pop('users')
         groups = validated_data.pop('groups')
+
+        if not groups:
+            validated_data['title'] = f"{authenticated_user.discord.username}'s discovery playlist"
+
         dynamic_playlist = DynamicPlaylist.objects.create(**validated_data)
         dynamic_playlist.groups.set(groups)
 
