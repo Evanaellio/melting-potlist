@@ -167,6 +167,6 @@ EMAIL_USE_TLS: True
 EMAIL_USE_SSL: False
 LOGGING = DEFAULT_LOGGING
 
-VERSION = "1.3.2"
+VERSION = "2.0.0"
 
 django_yamlconf.load()
