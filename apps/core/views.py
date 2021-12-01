@@ -1,20 +1,22 @@
+import datetime
 import json
 import urllib.parse
 from dataclasses import dataclass
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
+from ..user_profile.models import DynamicPlaylist
 
 
 @dataclass
 class Alert:
-    """Class for keeping track of an item in inventory."""
     message: str
     link: str = None
     css_class: str = "alert-primary"
@@ -59,6 +61,9 @@ def make_guild(guild: DiscordGuild):
         'name': guild.name,
         'id': guild.id,
         'image': guild.image,
+        'default_image': guild.default_image,
+        'is_ready': guild.is_ready,
+        'users_ready_count': len(guild.users_ready)
     }
 
 
@@ -67,20 +72,40 @@ def make_user(discord_user: DiscordUser):
         'id': str(discord_user.id),
         'name': discord_user.username,
         'image': discord_user.image,
+        'image_16': discord_user.image + '?size=16',
+        'image_32': discord_user.image + '?size=32',
         'default_image': discord_user.default_image,
-        '$isDisabled': len(discord_user.user.settings.get_enabled_tracks()) == 0,
+    }
+
+
+def make_multiselect_user(discord_user: DiscordUser):
+    is_user_ready = discord_user.is_ready
+
+    multiselect_user = make_user(discord_user)
+    multiselect_user['$isDisabled'] = not is_user_ready
+    multiselect_user['inInitialSelection'] = is_user_ready
+
+    return multiselect_user
+
+
+def make_multiselect_guild(guild: DiscordGuild):
+    return {
+        'id': str(guild.id),
+        'name': guild.name,
+        'image': guild.image,
+        'image_16': guild.image + '?size=16',
+        'image_32': guild.image + '?size=32',
+        'default_image': guild.default_image,
+        '$isDisabled': not guild.is_ready,
     }
 
 
 @login_required
 def groups(request):
-    ready_guilds = sorted(filter(lambda guild: guild.users.count() >= 2, request.user.discord.guilds.all()),
-                          key=lambda guild: guild.users.count(), reverse=True)
-    not_ready_guilds = filter(lambda guild: guild.users.count() < 2, request.user.discord.guilds.all())
-
+    user_guilds = list(map(make_guild, request.user.discord.guilds.all()))
+    user_guilds.sort(key=lambda guild: guild['users_ready_count'], reverse=True)
     context = {
-        'ready_guilds': list(map(make_guild, ready_guilds)),
-        'not_ready_guilds': list(map(make_guild, not_ready_guilds)),
+        'user_guilds': user_guilds,
     }
 
     return render(request, 'core/groups.html', context)
@@ -89,7 +114,7 @@ def groups(request):
 @login_required
 def group_playlist(request, guild_id):
     guild = get_object_or_404(DiscordGuild, id=guild_id)
-    users = list(map(make_user, guild.users.all()))
+    users = list(map(make_multiselect_user, guild.users.all()))
 
     context = {
         'users_json': json.dumps(users),
@@ -135,3 +160,73 @@ def player(request):
     }
 
     return render(request, 'core/player.html', context)
+
+
+def subtitles(request):
+    duration = datetime.timedelta(seconds=int(request.GET.get('duration')))
+
+    ending_start_delta = duration - datetime.timedelta(seconds=15)
+    ending_end_delta = duration - datetime.timedelta(seconds=5)
+    ending_start = '{0:02d}:{1:02d}'.format(*divmod(ending_start_delta.seconds, 60))
+    ending_end = '{0:02d}:{1:02d}'.format(*divmod(ending_end_delta.seconds, 60))
+
+    context = {
+        'ending_start': ending_start,
+        'ending_end': ending_end,
+        'title': request.GET.get('title'),
+    }
+
+    return render(request, 'core/subtitles.webvtt', context, content_type="text/vtt")
+
+
+@login_required
+def create_dynamic_playlist(request, guild_id):
+    guild = get_object_or_404(DiscordGuild, id=guild_id)
+    users = list(map(make_multiselect_user, guild.users.all()))
+
+    context = {
+        'json_context': json.dumps({
+            'users': users,
+            'guild_id': str(guild_id),
+        }),
+        'title': guild.name,
+    }
+
+    return render(request, 'core/create_dynamic_playlist.html', context)
+
+
+@login_required
+def play_dynamic_playlist(request, playlist_id):
+    playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
+
+    if playlist.users.get(dynamicplaylistuser__is_author=True) != request.user:
+        raise PermissionDenied("Only the author of a playlist can play it (for now)")
+
+    if playlist.groups.exists():
+        users = list(map(lambda discord_user: make_multiselect_user(discord_user),
+                         DiscordUser.objects.filter(guilds__in=playlist.groups.all())))
+    else:
+        users = list(map(lambda user: make_multiselect_user(user.discord), playlist.users.all()))
+
+    active_users = list(
+        map(lambda user: str(user.discord.id), playlist.users.filter(dynamicplaylistuser__is_active=True)))
+
+    # Synchronize active users playlists before playing (except in solo mode)
+    if playlist.groups.exists():
+        for active_user in playlist.users.filter(dynamicplaylistuser__is_active=True):
+            for enabled_playlist in active_user.playlists.filter(enabled=True):
+                enabled_playlist.synchronize()
+
+    for multiselect_user in users:
+        multiselect_user["inInitialSelection"] = \
+            multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
+
+    context = {
+        'json_context': json.dumps({
+            'users': users,
+            'playlistId': playlist.id,
+        }),
+        'title': f"🎵 {playlist.title}",
+    }
+
+    return render(request, 'core/play_dynamic_playlist.html', context)

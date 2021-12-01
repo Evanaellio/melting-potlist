@@ -2,6 +2,17 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+def discord_image(type, identifier, name):
+    if identifier:
+        ext = 'gif' if name.startswith('a_') else 'png'
+        return f"https://cdn.discordapp.com/{type}/{identifier}/{name}.{ext}"
+    return None
+
+
+def discord_default_image(identifier):
+    return f'https://cdn.discordapp.com/embed/avatars/{int(identifier) % 5}.png'
+
+
 class DiscordGuild(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.TextField()
@@ -9,12 +20,32 @@ class DiscordGuild(models.Model):
 
     @property
     def image(self):
-        if self.icon:
-            icon_ext = 'gif' if self.icon.startswith('a_') else 'png'
-            image = f"https://cdn.discordapp.com/icons/{self.id}/{self.icon}.{icon_ext}"
-        else:
-            image = 'https://cdn.discordapp.com/embed/avatars/0.png'
-        return image
+        return discord_image('icons', self.id, self.icon) or self.default_image
+
+    @property
+    def default_image(self):
+        return discord_default_image(self.id)
+
+    @property
+    def is_ready(self):
+        if self.users.count() < 2:
+            return False
+
+        ready_count = 0
+        for user in self.users.all():
+            if user.is_ready:
+                ready_count += 1
+                if ready_count >= 2:
+                    return True
+
+        return False
+
+    @property
+    def users_ready(self):
+        return [user for user in self.users.all() if user.is_ready]
+
+    def __str__(self):
+        return f'{self.name} ({self.id})'
 
 
 class DiscordUser(models.Model):
@@ -28,13 +59,12 @@ class DiscordUser(models.Model):
 
     @property
     def image(self):
-        if self.avatar:
-            icon_ext = 'gif' if self.avatar.startswith('a_') else 'png'
-            image = f'https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.{icon_ext}'
-        else:
-            image = self.default_image
-        return image
+        return discord_image('avatars', self.id, self.avatar) or self.default_image
 
     @property
     def default_image(self):
-        return f'https://cdn.discordapp.com/embed/avatars/{int(self.discriminator) % 5}.png'
+        return discord_default_image(self.discriminator)
+
+    @property
+    def is_ready(self):
+        return len(self.user.settings.get_enabled_tracks()) > 0

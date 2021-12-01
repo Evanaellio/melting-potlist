@@ -38,10 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'django_yamlconf',
+    'rest_framework',
     'widget_tweaks',
+    'webpack_loader',
     'apps.core',
     'apps.discord_login',
     'apps.user_profile',
+    'apps.api',
 ]
 
 MIDDLEWARE = [
@@ -105,6 +108,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -127,9 +140,18 @@ STATIC_URL = '/content/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    BASE_DIR / "vue_components" / "dist", # Static resources compiled by vue service build (using Webpack)
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': DEBUG,
+        'BUNDLE_DIR_NAME': '/bundles/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'vue_components', 'webpack-stats.json'),
+    }
+}
 
 AUTHENTICATION_BACKENDS = [
     'apps.discord_login.backends.DiscordBackend',
@@ -145,6 +167,6 @@ EMAIL_USE_TLS: True
 EMAIL_USE_SSL: False
 LOGGING = DEFAULT_LOGGING
 
-VERSION = "1.3.3"
+VERSION = "2.0.0"
 
 django_yamlconf.load()

@@ -1,0 +1,23 @@
+{% extends "core/navigation.html" %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block css %}
+    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
+    <link rel="stylesheet" href="{% static 'css/core/group_playlist.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h5>{{ title }}</h5>
+    <br/>
+    <div id="vue_app">
+        {% csrf_token %}
+        <play-dynamic-playlist></play-dynamic-playlist>
+    </div>
+
+    {% render_bundle 'app' %}
+{% endblock %}
+
+{% block javascript %}
+    <script>window.context = {{ json_context | safe }};</script>
+{% endblock %}
