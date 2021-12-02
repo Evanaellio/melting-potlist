@@ -9,6 +9,7 @@
       height="675"
       v-on:playing="syncAudioAndVideo"
       :src="currentMedia.video"
+      v-on:dblclick="this.$refs.video_player.requestFullscreen()"
     >
       <track
         label="English"
