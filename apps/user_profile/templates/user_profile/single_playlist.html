@@ -9,7 +9,12 @@
     <p class="h5 text-break">{{ title }}</p>
     <p class="h5 text-break">{{ track_count }} tracks</p>
     {% if deleted_track_count %}
-        <p class="h5 text-break text-danger">{{ deleted_track_count }} deleted tracks</p>
+        <p class="h5 text-break text-danger">{{ deleted_track_count }} deleted
+            track{{ deleted_track_count|pluralize }}</p>
+    {% endif %}
+    {% if unavailable_track_count %}
+        <p class="h5 text-break text-warning">{{ unavailable_track_count }} unavailable
+            track{{ unavailable_track_count|pluralize }}</p>
     {% endif %}
     <div id="tracks-table" class="table-borderless table-sm"></div>
 
@@ -60,7 +65,11 @@
         function rowStyle(row, index) {
             if (row.deleted) {
                 return {
-                    css: {"color": "#e74c3c"}
+                    css: {"color": "var(--danger)"}
+                };
+            } else if (row.unavailable) {
+                return {
+                    css: {"color": "var(--warning)"}
                 };
             }
             return {};

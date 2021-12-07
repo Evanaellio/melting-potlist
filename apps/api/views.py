@@ -1,5 +1,4 @@
-import json
-from typing import List
+import logging
 from urllib.parse import quote
 
 import yt_dlp
@@ -20,6 +19,8 @@ YTDL_OPTS = {
     'quiet': True,
 }
 
+logger = logging.getLogger(__name__)
+
 
 def is_valid_video_format(song_format):
     if 'vbr' not in song_format:
@@ -29,6 +30,7 @@ def is_valid_video_format(song_format):
         return song_format["fragments"][0]["path"].startswith("range")
     except (KeyError, IndexError):
         return True
+
 
 def fetch_media(media_url):
     with yt_dlp.YoutubeDL(YTDL_OPTS) as ydl:
@@ -91,20 +93,25 @@ class PersistAndNext(APIView):
     def post(self, request, playlist_id, format=None):
         playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
-        next_user_track_candidates: List[UserTrack] = playlist.persist_track_and_find_next(
-            request.data["trackToPersist"], 5)
-
-        if not next_user_track_candidates:
-            raise BadRequest('No active user in playlist')
+        if request.data["trackToPersist"]:
+            playlist.persist_track(request.data["trackToPersist"])
 
         for i in range(5):
-            next_user_track = next_user_track_candidates[i]
+            next_user_track: UserTrack = playlist.find_next_track()
+            if not next_user_track:
+                raise BadRequest('No active user in playlist')
+
             next_track_url = UriParser(next_user_track.track_uri.uri).url
             if response_content := fetch_media(next_track_url):
                 response_content["id"] = next_user_track.id
                 return Response(response_content)
+            else:
+                next_user_track.track_uri.unavailable = True
+                next_user_track.track_uri.save()
+                logger.warning("Tagged TrackUri '%s' as unavailable because it couldn't be fetched",
+                               next_user_track.track_uri.uri)
 
-        raise Exception("Couldn't fetch any of the track candidates after 5 tries")
+        raise Exception("Couldn't fetch any valid user track after 5 tries")
 
 
 class Media(APIView):

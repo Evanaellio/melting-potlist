@@ -6,9 +6,8 @@ from annoying.fields import AutoOneToOneField
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
-
 from django.db.models.constraints import UniqueConstraint
+from django.utils import timezone
 
 from apps.discord_login.models import DiscordGuild
 
@@ -24,6 +23,7 @@ class TrackUri(models.Model):
     uri = models.TextField(primary_key=True)
     track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name='uris', null=True)
     deleted = models.BooleanField(default=False)
+    unavailable = models.BooleanField(default=False)
 
 
 class UserPlaylist(models.Model):
@@ -81,7 +81,9 @@ class UserSettings(models.Model):
 
     def get_enabled_tracks(self) -> List[UserTrack]:
         enabled_playlists = self.user.playlists.filter(enabled=True)
-        return list(UserTrack.objects.filter(user_playlist__in=enabled_playlists, track_uri__deleted=False))
+        return list(UserTrack.objects.filter(user_playlist__in=enabled_playlists,
+                                             track_uri__deleted=False,
+                                             track_uri__unavailable=False))
 
 
 def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count) -> float:
@@ -114,44 +116,45 @@ class DynamicPlaylist(models.Model):
     users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
     title = models.TextField(default="Unnamed dynamic playlist")
 
-    def persist_track_and_find_next(self, track_id_to_persist, next_track_count=1) -> List[UserTrack]:
+    def persist_track(self, track_id_to_persist):
         is_group_mode = self.groups.exists()
         playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
 
-        if not active_users:
-            return []
+        persisted_track = UserTrack.objects.get(id=track_id_to_persist)
 
-        if track_id_to_persist:
-            persisted_track = UserTrack.objects.get(id=track_id_to_persist)
-
-            # Update (or create) listening stats for active users (in group mode) or playlist author (in solo mode)
-            for listening_user in (active_users if is_group_mode else [playlist_author]):
-                listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
-                    listener=listening_user.user,
-                    user_track=persisted_track
-                )
-
-                if not listen_stats_created:
-                    listen_stats.listen_count += 1
-                    listen_stats.date_last_listened = django.utils.timezone.now()
-                    listen_stats.save()
-
-            # Save track to dynamic playlist's list of tracks
-            DynamicPlaylistTrack.objects.create(
-                dynamic_playlist=self,
-                track=persisted_track
+        # Update (or create) listening stats for active users (in group mode) or playlist author (in solo mode)
+        for listening_user in (active_users if is_group_mode else [playlist_author]):
+            listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
+                listener=listening_user.user,
+                user_track=persisted_track
             )
 
-            # Mark the user that provided the persisted track as played in current rotation
-            persisted_track_user: DynamicPlaylistUser = self.dynamic_playlist_users.get(
-                user=persisted_track.user_playlist.user)
-            persisted_track_user.played_in_rotation = True
-            persisted_track_user.save()
+            if not listen_stats_created:
+                listen_stats.listen_count += 1
+                listen_stats.date_last_listened = django.utils.timezone.now()
+                listen_stats.save()
 
-        # Must reiterate database query to avoid conserving cached values before updates
+        # Save track to dynamic playlist's list of tracks
+        DynamicPlaylistTrack.objects.create(
+            dynamic_playlist=self,
+            track=persisted_track
+        )
+
+        # Mark the user that provided the persisted track as played in current rotation
+        persisted_track_user: DynamicPlaylistUser = self.dynamic_playlist_users.get(
+            user=persisted_track.user_playlist.user)
+        persisted_track_user.played_in_rotation = True
+        persisted_track_user.save()
+
+    def find_next_track(self) -> UserTrack:
+        is_group_mode = self.groups.exists()
+        playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
         users_still_in_rotation = list(filter(lambda user: not user.played_in_rotation, active_users))
+
+        if not active_users:
+            return []
 
         # Start a new rotation if all users have finished the current rotation
         if not users_still_in_rotation:
@@ -177,7 +180,7 @@ class DynamicPlaylist(models.Model):
             filtered_stats = list(filter(lambda stat: stat.user_track == user_track, statistics))
             weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening)))
 
-        return list(random.choices(all_tracks, k=next_track_count, weights=weights))
+        return random.choices(all_tracks, k=1, weights=weights)[0]
 
 
 class DynamicPlaylistUser(models.Model):

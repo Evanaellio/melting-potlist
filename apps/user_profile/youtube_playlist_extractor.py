@@ -1,12 +1,11 @@
 import re
 from datetime import timedelta
 
+import yt_dlp
 from django.utils import timezone
 
 from apps.user_profile.models import UserPlaylist, Track, TrackUri, UserTrack
 from .uri_converter import UriParser
-
-import yt_dlp
 
 YTDL_OPTS = {
     'ignoreerrors': True,
@@ -21,6 +20,14 @@ def make_track_uri(video):
 
     # Videos that are private or deleted appear without an uploader
     track_uri.deleted = not video["uploader"]
+
+    # Retry to fetch unavailable track info to check if it's still unavailable
+    if track_uri.unavailable:
+        with yt_dlp.YoutubeDL(YTDL_OPTS) as ytdl:
+            track_uri.unavailable = (
+                    not track_uri.deleted
+                    and not ytdl.extract_info(UriParser(track_uri.uri).url, download=False, process=False)
+            )
 
     if not track_uri.deleted and not track_uri.track:
         artist_without_topic = re.sub(' - [Tt]opic$', '', video['uploader'])

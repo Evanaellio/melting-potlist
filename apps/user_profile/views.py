@@ -52,6 +52,7 @@ def make_track(user_track: UserTrack):
         "date_added_natural": naturalday(user_track.date_added),
         "date_added": datetime.timestamp(user_track.date_added),
         "deleted": track_uri.deleted,
+        "unavailable": track_uri.unavailable,
     }
 
 
@@ -101,6 +102,7 @@ def single_playlist(request, playlist_id):
 
     valid_tracks = playlist.user_tracks.filter(track_uri__deleted=False)
     deleted_tracks = playlist.user_tracks.filter(track_uri__deleted=True)
+    unavailable_tracks = playlist.user_tracks.filter(track_uri__unavailable=True)
 
     tracks = list(map(make_track, playlist.user_tracks.all()))
 
@@ -112,6 +114,7 @@ def single_playlist(request, playlist_id):
         'tracks_json': json.dumps(tracks),
         'track_count': valid_tracks.count(),
         'deleted_track_count': deleted_tracks.count(),
+        'unavailable_track_count': unavailable_tracks.count(),
     }
 
     return render(request, 'user_profile/single_playlist.html', context=context)

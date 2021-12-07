@@ -9,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from django.db.models import Q
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
 from .playlist_generator import generate_youtube, generate_pls
@@ -34,12 +35,13 @@ def home(request):
                       css_class='alert-warning'))
 
         for enabled_playlist in request.user.playlists.filter(enabled=True):
-            deleted_tracks_count = enabled_playlist.user_tracks.filter(track_uri__deleted=True).count()
+            deleted_or_unavailable_tracks_count = enabled_playlist.user_tracks.filter(
+                Q(track_uri__deleted=True) | Q(track_uri__unavailable=True)).count()
 
-            if deleted_tracks_count:
+            if deleted_or_unavailable_tracks_count:
                 alerts.append(
                     Alert(
-                        message=f'''⚠ {deleted_tracks_count} tracks are deleted from your playlist: "{enabled_playlist.title}"''',
+                        message=f'''⚠ {deleted_or_unavailable_tracks_count} tracks are unavailable or deleted from your playlist: "{enabled_playlist.title}"''',
                         link=reverse('user_profile:single_playlist', kwargs={'playlist_id': enabled_playlist.id}),
                         css_class='alert-danger'))
 
