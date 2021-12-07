@@ -1,7 +1,10 @@
+import datetime
 import random
-from typing import List
+from collections import defaultdict
+from typing import List, Optional
 
 import django
+import pytz
 from annoying.fields import AutoOneToOneField
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -87,6 +90,15 @@ class UserSettings(models.Model):
 
 
 def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count) -> float:
+    # Merge all stats to aggregate a single listen count and date for each tuple (user, track_uri)
+    merged_stats = defaultdict(
+        lambda: {"date_last_listened": datetime.datetime.min.replace(tzinfo=pytz.UTC), "listen_count": 0})
+    for track_stat in track_statistics:
+        key = (track_stat.user_track.user_playlist.user.id, track_stat.user_track.track_uri.uri)
+        merged_stats[key]["listen_count"] += track_stat.listen_count
+        merged_stats[key]["date_last_listened"] = max(merged_stats[key]["date_last_listened"],
+                                                      track_stat.date_last_listened)
+
     now = django.utils.timezone.now()
     weight = 1.0
 
@@ -94,8 +106,8 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
     for i in range(active_users_count - len(track_statistics)):
         weight *= 10
 
-    for track_stat in track_statistics:
-        delta = now - track_stat.date_last_listened
+    for merged_stat in merged_stats.values():
+        delta = now - merged_stat["date_last_listened"]
         total_hours = delta.days * 24 + (delta.seconds / 3600)
 
         if delta.days > 31:
@@ -147,14 +159,14 @@ class DynamicPlaylist(models.Model):
         persisted_track_user.played_in_rotation = True
         persisted_track_user.save()
 
-    def find_next_track(self) -> UserTrack:
+    def find_next_track(self) -> Optional[UserTrack]:
         is_group_mode = self.groups.exists()
         playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
         users_still_in_rotation = list(filter(lambda user: not user.played_in_rotation, active_users))
 
         if not active_users:
-            return []
+            return None
 
         # Start a new rotation if all users have finished the current rotation
         if not users_still_in_rotation:
@@ -167,17 +179,19 @@ class DynamicPlaylist(models.Model):
 
         chosen_user = random.choice(users_still_in_rotation)
         all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
+        all_track_uris = list(map(lambda track: track.track_uri.uri, all_tracks))
 
         if is_group_mode:
             users_listening = list(map(lambda dyn_playlist_user: dyn_playlist_user.user, active_users))
         else:
             users_listening = [playlist_author.user]
 
-        statistics = list(UserTrackListenStats.objects.filter(user_track__in=all_tracks, listener__in=users_listening))
+        statistics = list(UserTrackListenStats.objects.filter(user_track__track_uri__uri__in=all_track_uris,
+                                                              listener__in=users_listening))
 
         weights = []
-        for user_track in all_tracks:
-            filtered_stats = list(filter(lambda stat: stat.user_track == user_track, statistics))
+        for user_track_uri in all_track_uris:
+            filtered_stats = list(filter(lambda stat: stat.user_track.track_uri.uri == user_track_uri, statistics))
             weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening)))
 
         return random.choices(all_tracks, k=1, weights=weights)[0]
