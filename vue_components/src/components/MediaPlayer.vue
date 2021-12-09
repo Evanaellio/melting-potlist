@@ -9,7 +9,7 @@
       height="675"
       v-on:playing="syncAudioAndVideo"
       :src="currentMedia.video"
-      v-on:dblclick="this.$refs.video_player.requestFullscreen()"
+      v-on:dblclick="toggleFullscreen"
     >
       <track
         label="English"
@@ -47,7 +47,7 @@
       type="button"
       class="btn btn-outline-primary"
       style="font-size: 1.5rem"
-      v-on:click="this.$refs.video_player.requestFullscreen()"
+      v-on:click="toggleFullscreen"
     >
       <i class="bi bi-arrows-fullscreen"></i>
     </button>
@@ -103,6 +103,13 @@ export default {
       // Tolerate up to 200 ms of delay between audio and video, and try to synchronize when it's beyond that
       if (audioVideoDesync > 0.2) {
         this.$refs.video_player.currentTime = this.$refs.audio_player.currentTime;
+      }
+    },
+    toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        this.$refs.video_player.requestFullscreen();
+      } else {
+        document.exitFullscreen();
       }
     },
     onMediaEnded() {
