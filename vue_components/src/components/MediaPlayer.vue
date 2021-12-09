@@ -154,3 +154,10 @@ export default {
   }
 };
 </script>
+
+<style>
+/* Disable video controls when in fullscreen on Chromium browsers */
+video::-webkit-media-controls {
+  display: none !important;
+}
+</style>
