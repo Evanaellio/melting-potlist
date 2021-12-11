@@ -102,7 +102,7 @@ export default {
 }
 
 .multiselect__option--disabled {
-  opacity: 25%;
+  opacity: 0.3;
 }
 
 .multiselect__tag-icon:after {
