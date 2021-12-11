@@ -2,6 +2,20 @@
 {% load static %}
 
 {% block content %}
+    {% for alert in alerts %}
+        {% if alert.link %} <a href="{{ alert.link }}" class="alert-link"> {% endif %}
+
+    <div class="alert {{ alert.css_class }} alert-dismissible fade show " role="alert">
+        {{ alert.message }}
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    {% if alert.link %}</a>{% endif %}
+
+    {% endfor %}
+
     <div class="jumbotron">
         <p class="lead">Melting Potlist is a collaborative playlist tool powered by Discord</p>
 
@@ -39,19 +53,5 @@
             {% endif %}
         </ol>
     </div>
-
-    {% for alert in alerts %}
-        {% if alert.link %} <a href="{{ alert.link }}" class="alert-link"> {% endif %}
-
-    <div class="alert {{ alert.css_class }} alert-dismissible fade show " role="alert">
-        {{ alert.message }}
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-
-    {% if alert.link %}</a>{% endif %}
-
-    {% endfor %}
 
 {% endblock %}
