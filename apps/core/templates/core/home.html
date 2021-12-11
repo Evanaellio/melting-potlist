@@ -1,10 +1,43 @@
 {% extends "core/navigation.html" %}
-
+{% load static %}
 
 {% block content %}
     <div class="jumbotron">
-        <h1 class="display-4">Welcome !</h1>
         <p class="lead">Melting Potlist is a collaborative playlist tool powered by Discord</p>
+
+        <h3>Getting started</h3>
+        <ol>
+            {% if user.name %}
+                <li>Login with Discord</li>
+                <li>Configure <a class="nav-item ml-auto" href="{% url 'user_profile:all_playlists' %}">
+                    <button type="button" class="btn btn-labeled btn-outline-info">
+                        My playlists<span class="btn-label"><i class="bi bi-music-note-list"></i></span>
+                    </button>
+                </a></li>
+                <li><a class="nav-item ml-auto" href="{% url 'core:groups' %}">
+                    <button type="button" class="btn btn-labeled btn-outline-primary">
+                        Generate Playlist<span class="btn-label"><i class="bi bi-speaker"></i></span>
+                    </button>
+                </a></li>
+                <li><p>These options can be accessed anytime by clicking on your profile picture <a
+                        class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                        style="border: none">
+                    <img src="{{ user.image }}" width="64" height="64" class="rounded-circle">
+                </a></p></li>
+            {% else %}
+                <li><a href="{% url 'discord_login:login' %}">
+                    <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">
+                        <span>Login with <img src="{% static 'discord-logo.svg' %}" alt="Discord Logo"/></span>
+                    </button>
+                </a></li>
+            {% endif %}
+        </ol>
     </div>
 
     {% for alert in alerts %}
