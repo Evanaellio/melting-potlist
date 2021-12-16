@@ -50,6 +50,7 @@
                     sortable: true,
                     searchable: false
                 },
+                {title: "Status", field: "status", sortable: true, searchable: true},
             ],
             data: tableData
         })
@@ -63,11 +64,11 @@
         }
 
         function rowStyle(row, index) {
-            if (row.deleted) {
+            if (row.status === "Deleted") {
                 return {
                     css: {"color": "var(--danger)"}
                 };
-            } else if (row.unavailable) {
+            } else if (row.status === 'Unavailable') {
                 return {
                     css: {"color": "var(--warning)"}
                 };

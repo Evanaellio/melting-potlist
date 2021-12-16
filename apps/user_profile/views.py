@@ -42,6 +42,13 @@ def make_track(user_track: UserTrack):
     track_id = track_uri.uri.split(':')[2]
     uri_parser = UriParser(track_uri.uri)
 
+    if track_uri.deleted:
+        status = "Deleted"
+    elif track_uri.unavailable:
+        status = "Unavailable"
+    else:
+        status = "Available"
+
     return {
         "title": track_uri.track.title if track_uri.track else "[DELETED]",
         "artist": track_uri.track.artist if track_uri.track else "[DELETED]",
@@ -51,8 +58,7 @@ def make_track(user_track: UserTrack):
         "duration": duration_to_str(track_uri.track.duration) if track_uri.track else "0:00",
         "date_added_natural": naturalday(user_track.date_added),
         "date_added": datetime.timestamp(user_track.date_added),
-        "deleted": track_uri.deleted,
-        "unavailable": track_uri.unavailable,
+        "status": status,
     }
 
 
