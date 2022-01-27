@@ -50,7 +50,7 @@ export default {
   mounted() {
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-    this.websocket = new WebSocket(`ws://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`);
+    this.websocket = new WebSocket(`wss://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`);
     this.websocket.onmessage = this.onWebsocketMessage;
     this.websocket.onopen = () => this.sendWebsocketData({action: "query_status"});
     this.websocket.onclose = () => console.error('Websocket closed unexpectedly');

@@ -139,7 +139,7 @@ export default {
 
     this.persistPlayedSongAndFetchNext();
 
-    this.websocket = new WebSocket(`ws://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`);
+    this.websocket = new WebSocket(`wss://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`);
     this.websocket.onmessage = this.onWebsocketMessage;
     this.websocket.onclose = () => {
       console.error('Websocket closed unexpectedly');
