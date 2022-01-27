@@ -1,20 +1,24 @@
 <template>
   <Multiselect
-    v-model="users.selected"
-    :options="users.all"
-    label="name"
-    track-by="id"
-    :option-height="60"
-    placeholder=""
-    @select="onSelectUser"
-    @remove="onRemoveUser"
+      v-model="users.selected"
+      :options="users.all"
+      label="name"
+      track-by="id"
+      :option-height="60"
+      placeholder=""
+      @select="onSelectUser"
+      @remove="onRemoveUser"
   ></Multiselect>
   <MediaPlayer
-    :next-media-prop="nextMedia"
-    :media-playing-event-timing="8"
-    @media-playing="onMediaPlaying"
-    @media-started="onMediaStarted"
-    @media-played="onMediaPlayed"
+      ref="mediaPlayer"
+      :next-media-prop="nextMedia"
+      :media-playing-event-timing="8"
+      @media-playing="onMediaPlaying"
+      @media-started="onMediaStarted"
+      @media-played="onMediaPlayed"
+      @media-seeked="updateStatus"
+      @play="updateStatus"
+      @pause="updateStatus"
   ></MediaPlayer>
 </template>
 
@@ -36,8 +40,14 @@ export default {
       playlistId: null,
       csrfToken: null,
       nextMedia: null,
+      websocket: null,
       currentMediaPersisted: false
     };
+  },
+  watch: {
+    nextMedia: function (newVal) {
+      this.sendWebsocketData({action: "update_status", status: {nextMedia: newVal}});
+    },
   },
   computed: {
     selectedUsers() {
@@ -58,7 +68,7 @@ export default {
           "Content-Type": "application/json",
           "X-CSRFToken": this.csrfToken
         },
-        body: JSON.stringify({ is_active: isActive })
+        body: JSON.stringify({is_active: isActive})
       }).then(() => {
         if (this.currentMediaPersisted) {
           this.persistPlayedSongAndFetchNext();
@@ -70,19 +80,19 @@ export default {
         this.currentMediaPersisted = true;
       }
       return fetch(
-        `/api/dynamicplaylists/${this.playlistId}/persist_and_next/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": this.csrfToken
-          },
-          body: JSON.stringify({ trackToPersist: playedSongId })
-        }
+          `/api/dynamicplaylists/${this.playlistId}/persist_and_next/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": this.csrfToken
+            },
+            body: JSON.stringify({trackToPersist: playedSongId})
+          }
       )
-        .then(response => response.json())
-        .then(jsonData => (this.nextMedia = jsonData))
-        .catch(reason => console.error(reason));
+          .then(response => response.json())
+          .then(jsonData => (this.nextMedia = jsonData))
+          .catch(reason => console.error(reason));
     },
     onMediaPlaying(event) {
       if (event.elapsedTime > 30 && event.nextMedia === null) {
@@ -97,25 +107,43 @@ export default {
       if (event.nextMedia === null) {
         this.persistPlayedSongAndFetchNext(event.currentMedia.id);
       }
+    },
+    sendWebsocketData(data) {
+      this.websocket.send(JSON.stringify(data));
+    },
+    onWebsocketMessage(event) {
+      const data = JSON.parse(event.data);
+
+      if (data.action === 'query_status') {
+        this.updateStatus();
+      }
+    },
+    updateStatus() {
+      this.sendWebsocketData({action: "update_status", status: this.$refs.mediaPlayer.status()});
     }
   },
   created() {
     this.playlistId = this.$window.context.playlistId;
-    console.log("CREATED with playlist : " + this.playlistId);
   },
   mounted() {
     this.users.all = this.$window.context.users.sort(
-      (a, b) =>
-        a.$isDisabled - b.$isDisabled || ("" + a.name).localeCompare(b.name)
+        (a, b) =>
+            a.$isDisabled - b.$isDisabled || ("" + a.name).localeCompare(b.name)
     );
 
     this.users.selected = this.users.all.filter(
-      user => user.inInitialSelection
+        user => user.inInitialSelection
     );
 
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
     this.persistPlayedSongAndFetchNext();
+
+    this.websocket = new WebSocket(`ws://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`);
+    this.websocket.onmessage = this.onWebsocketMessage;
+    this.websocket.onclose = () => {
+      console.error('Websocket closed unexpectedly');
+    };
   }
 };
 </script>
