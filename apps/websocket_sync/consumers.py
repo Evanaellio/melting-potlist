@@ -1,4 +1,5 @@
 import json
+import random
 
 import channels.exceptions
 from asgiref.sync import async_to_sync
@@ -34,11 +35,13 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
     playlist_id: int
     playlist_group_name: str
     is_host: bool
+    username: str
     current_user: AbstractUser
     playlist: DynamicPlaylist
 
     def connect(self):
         self.current_user = self.scope["user"]
+        self.username = self.current_user.username or "Anonymous#" + str(random.randrange(1, 10000))
 
         # For now, no authentication required to listen
         # if self.current_user.is_anonymous:
@@ -57,7 +60,7 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
             'type': 'websocket_action',
             'data': {
                 'action': 'connect',
-                'username': self.current_user.username,
+                'username': self.username,
                 'is_host': self.is_host,
                 'channel_layer_type': str(type(self.channel_layer)),
                 'group_name': self.playlist_group_name,
@@ -74,7 +77,7 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
             'type': 'websocket_action',
             'data': {
                 'action': 'disconnect',
-                'username': self.current_user.username,
+                'username': self.username,
                 'is_host': self.is_host,
                 'channel_layer_type': str(type(self.channel_layer)),
                 'group_name': self.playlist_group_name,
@@ -92,7 +95,7 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
             return
 
         if json_data['action'] == "query_status":
-            json_data['username'] = self.current_user.username
+            json_data['username'] = self.username
 
         message = {
             'type': 'websocket_action',
