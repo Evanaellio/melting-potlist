@@ -197,7 +197,8 @@ def create_dynamic_playlist(request, guild_id):
     return render(request, 'core/create_dynamic_playlist.html', context)
 
 
-@login_required
+# For now, no authentication required for watching playlists
+# @login_required
 def play_dynamic_playlist(request, playlist_id):
     playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 

@@ -40,8 +40,9 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
     def connect(self):
         self.current_user = self.scope["user"]
 
-        if self.current_user.is_anonymous:
-            raise channels.exceptions.DenyConnection()
+        # For now, no authentication required to listen
+        # if self.current_user.is_anonymous:
+        #     raise channels.exceptions.DenyConnection()
 
         self.playlist_id = self.scope['url_route']['kwargs']['playlist_id']
         self.playlist = DynamicPlaylist.objects.get(id=self.playlist_id)
