@@ -142,10 +142,10 @@ export default {
     this.websocket = new ReconnectingWebSocket(
       `${this.$window.context.websocketProtocol}://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`
     );
-    this.websocket.onmessage = this.onWebsocketMessage;
-    this.websocket.onclose = () => {
+    this.websocket.addEventListener("message", this.onWebsocketMessage);
+    this.websocket.addEventListener("close", () => {
       console.error("Websocket closed unexpectedly");
-    };
+    });
   }
 };
 </script>
