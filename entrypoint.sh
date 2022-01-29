@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Set settings env variable
+export DJANGO_SETTINGS_MODULE=melting_potlist.settings
+
 # Apply database migrations
 python manage.py migrate
 
