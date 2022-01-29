@@ -7,6 +7,8 @@ ENV PYTHONUNBUFFERED 1
 ENV NODE_ENV=production
 
 COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip install --upgrade pip wheel
+RUN apt-get update && apt-get -y install libpq-dev gcc build-essential
 RUN pip install -r requirements.txt
 
 RUN mkdir /usr/src/app/vue_components
