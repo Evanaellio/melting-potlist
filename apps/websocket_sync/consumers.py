@@ -32,9 +32,7 @@ TODO : Bouton pour share l'URL et la coller dans le presse papier
 
 class DynamicPlaylistConsumer(WebsocketConsumer):
     playlist_id: int
-    playlist_group_listeners_name: str
-    playlist_group_host_name: str
-    current_group: str
+    playlist_group_name: str
     is_host: bool
     current_user: AbstractUser
     playlist: DynamicPlaylist
@@ -47,35 +45,60 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
 
         self.playlist_id = self.scope['url_route']['kwargs']['playlist_id']
         self.playlist = DynamicPlaylist.objects.get(id=self.playlist_id)
-        self.playlist_group_listeners_name = f'playlist_{self.playlist_id}_listeners'
-        self.playlist_group_host_name = f'playlist_{self.playlist_id}_host'
+        self.playlist_group_name = f'playlist_{self.playlist_id}'
         self.is_host = self.playlist.dynamic_playlist_users.get(is_author=True).user == self.current_user
-        self.current_group = self.playlist_group_host_name if self.is_host else self.playlist_group_listeners_name
 
-        async_to_sync(self.channel_layer.group_add)(self.current_group, self.channel_name)
+        async_to_sync(self.channel_layer.group_add)(self.playlist_group_name, self.channel_name)
 
         self.accept()
 
+        connect_message = {
+            'type': 'websocket_action',
+            'data': {
+                'action': 'connect',
+                'username': self.current_user.username,
+                'is_host': self.is_host,
+                'channel_layer_type': str(type(self.channel_layer)),
+                'group_name': self.playlist_group_name,
+            }
+        }
+
+        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, connect_message)
+
     def disconnect(self, close_code):
         # Leave current group
-        async_to_sync(self.channel_layer.group_discard)(self.current_group, self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(self.playlist_group_name, self.channel_name)
+
+        disconnect_message = {
+            'type': 'websocket_action',
+            'data': {
+                'action': 'disconnect',
+                'username': self.current_user.username,
+                'is_host': self.is_host,
+                'channel_layer_type': str(type(self.channel_layer)),
+                'group_name': self.playlist_group_name,
+            }
+        }
+
+        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, disconnect_message)
 
     # Receive message from WebSocket
     def receive(self, text_data):
         json_data = json.loads(text_data)
-        other_group = self.playlist_group_listeners_name if self.is_host else self.playlist_group_host_name
 
-        json_data['are_you_host'] = self.is_host
-        json_data['current_group'] = self.current_group
-        json_data['other_group'] = other_group
+        # Only host can update status
+        if json_data['action'] == "update_status" and not self.is_host:
+            return
+
+        if json_data['action'] == "query_status":
+            json_data['username'] = self.current_user.username
 
         message = {
             'type': 'websocket_action',
             'data': json_data
         }
 
-        # Send message to other group
-        async_to_sync(self.channel_layer.group_send)(other_group, message)
+        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, message)
 
     def websocket_action(self, event):
         self.send_data(event['data'])

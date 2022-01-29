@@ -224,6 +224,7 @@ def play_dynamic_playlist(request, playlist_id):
         'json_context': json.dumps({
             'users': users,
             'playlistId': playlist.id,
+            'websocketProtocol': 'ws' if settings.DEBUG is True else 'wss',
         }),
         'title': f"🎵 {playlist.title}",
         'is_host': playlist.users.get(dynamicplaylistuser__is_author=True) == request.user
