@@ -3,6 +3,7 @@ import random
 
 import channels.exceptions
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import AbstractUser, AnonymousUser
 
@@ -37,20 +38,18 @@ class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
     is_host: bool
     username: str
     current_user: AbstractUser
-    playlist: DynamicPlaylist
+
+    @database_sync_to_async
+    def is_host(self):
+        playlist = DynamicPlaylist.objects.get(id=self.playlist_id)
+        return playlist.dynamic_playlist_users.get(is_author=True).user == self.current_user
 
     async def connect(self):
         self.current_user = self.scope["user"]
         self.username = self.current_user.username or "Anonymous#" + str(random.randrange(1, 9999))
-
-        # For now, no authentication required to listen
-        # if self.current_user.is_anonymous:
-        #     raise channels.exceptions.DenyConnection()
-
         self.playlist_id = self.scope['url_route']['kwargs']['playlist_id']
-        self.playlist = DynamicPlaylist.objects.get(id=self.playlist_id)
         self.playlist_group_name = f'playlist_{self.playlist_id}'
-        self.is_host = self.playlist.dynamic_playlist_users.get(is_author=True).user == self.current_user
+        self.is_host = await self.is_host()
 
         await self.channel_layer.group_add(self.playlist_group_name, self.channel_name)
 
@@ -84,7 +83,7 @@ class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(self.playlist_group_name, disconnect_message)
 
         # Leave current group
-        self.channel_layer.group_discard(self.playlist_group_name, self.channel_name)
+        await self.channel_layer.group_discard(self.playlist_group_name, self.channel_name)
 
     # Receive message from WebSocket
     async def receive_json(self, content, **kwargs):
