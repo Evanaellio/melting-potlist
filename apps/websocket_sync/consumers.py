@@ -3,7 +3,7 @@ import random
 
 import channels.exceptions
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import AbstractUser, AnonymousUser
 
 from apps.user_profile.models import DynamicPlaylist
@@ -31,7 +31,7 @@ TODO : Bouton pour share l'URL et la coller dans le presse papier
 '''
 
 
-class DynamicPlaylistConsumer(WebsocketConsumer):
+class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
     playlist_id: int
     playlist_group_name: str
     is_host: bool
@@ -39,9 +39,9 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
     current_user: AbstractUser
     playlist: DynamicPlaylist
 
-    def connect(self):
+    async def connect(self):
         self.current_user = self.scope["user"]
-        self.username = self.current_user.username or "Anonymous#" + str(random.randrange(1, 10000))
+        self.username = self.current_user.username or "Anonymous#" + str(random.randrange(1, 9999))
 
         # For now, no authentication required to listen
         # if self.current_user.is_anonymous:
@@ -52,9 +52,9 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
         self.playlist_group_name = f'playlist_{self.playlist_id}'
         self.is_host = self.playlist.dynamic_playlist_users.get(is_author=True).user == self.current_user
 
-        async_to_sync(self.channel_layer.group_add)(self.playlist_group_name, self.channel_name)
+        await self.channel_layer.group_add(self.playlist_group_name, self.channel_name)
 
-        self.accept()
+        await self.accept()
 
         connect_message = {
             'type': 'websocket_action',
@@ -67,12 +67,9 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
             }
         }
 
-        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, connect_message)
+        await self.channel_layer.group_send(self.playlist_group_name, connect_message)
 
-    def disconnect(self, close_code):
-        # Leave current group
-        async_to_sync(self.channel_layer.group_discard)(self.playlist_group_name, self.channel_name)
-
+    async def disconnect(self, close_code):
         disconnect_message = {
             'type': 'websocket_action',
             'data': {
@@ -84,29 +81,26 @@ class DynamicPlaylistConsumer(WebsocketConsumer):
             }
         }
 
-        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, disconnect_message)
+        await self.channel_layer.group_send(self.playlist_group_name, disconnect_message)
+
+        # Leave current group
+        self.channel_layer.group_discard(self.playlist_group_name, self.channel_name)
 
     # Receive message from WebSocket
-    def receive(self, text_data):
-        json_data = json.loads(text_data)
-
+    async def receive_json(self, content, **kwargs):
         # Only host can update status
-        if json_data['action'] == "update_status" and not self.is_host:
+        if content['action'] == "update_status" and not self.is_host:
             return
 
-        if json_data['action'] == "query_status":
-            json_data['username'] = self.username
+        if content['action'] == "query_status":
+            content['username'] = self.username
 
         message = {
             'type': 'websocket_action',
-            'data': json_data
+            'data': content
         }
 
-        async_to_sync(self.channel_layer.group_send)(self.playlist_group_name, message)
+        await self.channel_layer.group_send(self.playlist_group_name, message)
 
-    def websocket_action(self, event):
-        self.send_data(event['data'])
-
-    def send_data(self, data):
-        # Send data to WebSocket
-        self.send(text_data=json.dumps(data))
+    async def websocket_action(self, event):
+        await self.send_json(event['data'])
