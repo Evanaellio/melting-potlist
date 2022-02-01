@@ -9,7 +9,7 @@ RUN npm install -g pnpm
 RUN mkdir --parents /usr/src/app/vue_components
 WORKDIR /usr/src/app/vue_components
 COPY ["./vue_components/package.json", "./vue_components/pnpm-lock.yaml",  "./"]
-RUN pnpm install --global --prod
+RUN pnpm install --prod
 
 # Install Python packages
 WORKDIR /usr/src/app
