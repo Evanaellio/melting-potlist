@@ -11,6 +11,7 @@ specifiers:
   eslint-plugin-vue: ^7.0.0
   prettier: 1.19.1
   reconnecting-websocket: ^4.4.0
+  regenerator-runtime: ^0.13.9
   vue: ^3.0.0
   vue-multiselect: ^3.0.0-alpha.2
   webpack-bundle-tracker: ^1.0.0
@@ -25,6 +26,7 @@ dependencies:
   eslint: 6.8.0
   eslint-plugin-vue: 7.20.0_eslint@6.8.0
   reconnecting-websocket: 4.4.0
+  regenerator-runtime: 0.13.9
   vue: 3.2.29
   vue-multiselect: 3.0.0-alpha.2
   webpack-bundle-tracker: 1.4.0
