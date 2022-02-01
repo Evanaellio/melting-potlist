@@ -1,40 +1,31 @@
-import json
-import random
+import uuid
 
-import channels.exceptions
-from asgiref.sync import async_to_sync
+import re
 from channels.db import database_sync_to_async
-from channels.generic.websocket import WebsocketConsumer, AsyncJsonWebsocketConsumer
-from django.contrib.auth.models import AbstractUser, AnonymousUser
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import AbstractUser
 
 from apps.user_profile.models import DynamicPlaylist
+from unidecode import unidecode
 
 '''
 Implementation :
 
-Lorsqu'un utilisateur se connecte, il envoie un message what's up ? Et le host lui répond en lui donnant les infos à synchroniser (playing / paused, elapsedTime).
-Contrôle du son géré par chaque personne en individuel (sauf en mode contrôle de téléphone/PC à distance, mais c'est un autre sujet).
-
-Attention : ne pas autoriser les non hosts à contrôler des choses ou a seek, à vérifier côté serveur
-Todo : authent avec les sessions DJango (done ?)
-
 Afficher côté host et côté listeners la liste des utilisateurs connectés à la playlist (ou bien les synchroniser en temps réel avec qui accède ou pas)
 Côté listeners, seulement ça et pas le multiselect des gens
-
-SI c'est en mode 'just discovering songs by myself', alors message d'erreur si on essaye de rejoindre ?? Ou juste alerte ?
-
-Idée de génie : maintenant ça va être encore plus simple de gérer une liste des titres likés
-
-Add sync button to force resync of audio to host
-
-TODO : Bouton pour share l'URL et la coller dans le presse papier
 
 '''
 
 
+def cleanup_group_name(group_name):
+    return re.sub('[^a-zA-Z0-9_.-]', '_', unidecode(group_name))
+
+
 class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
     playlist_id: int
-    playlist_group_name: str
+    group_playlist: str
+    group_playlist_host: str
+    group_playlist_user: str
     is_host: bool
     username: str
     current_user: AbstractUser
@@ -46,12 +37,20 @@ class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         self.current_user = self.scope["user"]
-        self.username = self.current_user.username or "Anonymous#" + str(random.randrange(1, 9999))
+        self.username = self.current_user.username or "Anonymous#" + uuid.uuid4().hex
         self.playlist_id = self.scope['url_route']['kwargs']['playlist_id']
-        self.playlist_group_name = f'playlist_{self.playlist_id}'
+        self.group_playlist = f'playlist_{self.playlist_id}'
+        self.group_playlist_host = f'playlist_{self.playlist_id}_host'
+        self.group_playlist_user = cleanup_group_name(f'playlist_{self.playlist_id}_{self.username}')
         self.is_host = await self.is_host()
 
-        await self.channel_layer.group_add(self.playlist_group_name, self.channel_name)
+        # Groups in parent variable self.groups will be leaved on user disconnect
+        self.groups = [self.group_playlist, self.group_playlist_user]
+        if self.is_host:
+            self.groups.append(self.group_playlist_host)
+
+        for group in self.groups:
+            await self.channel_layer.group_add(group, self.channel_name)
 
         await self.accept()
 
@@ -61,12 +60,10 @@ class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
                 'action': 'connect',
                 'username': self.username,
                 'is_host': self.is_host,
-                'channel_layer_type': str(type(self.channel_layer)),
-                'group_name': self.playlist_group_name,
             }
         }
 
-        await self.channel_layer.group_send(self.playlist_group_name, connect_message)
+        await self.channel_layer.group_send(self.group_playlist, connect_message)
 
     async def disconnect(self, close_code):
         disconnect_message = {
@@ -75,31 +72,28 @@ class DynamicPlaylistConsumer(AsyncJsonWebsocketConsumer):
                 'action': 'disconnect',
                 'username': self.username,
                 'is_host': self.is_host,
-                'channel_layer_type': str(type(self.channel_layer)),
-                'group_name': self.playlist_group_name,
             }
         }
 
-        await self.channel_layer.group_send(self.playlist_group_name, disconnect_message)
-
-        # Leave current group
-        await self.channel_layer.group_discard(self.playlist_group_name, self.channel_name)
+        await self.channel_layer.group_send(self.group_playlist, disconnect_message)
 
     # Receive message from WebSocket
     async def receive_json(self, content, **kwargs):
-        # Only host can update status
-        if content['action'] == "update_status" and not self.is_host:
-            return
-
-        if content['action'] == "query_status":
-            content['username'] = self.username
-
         message = {
             'type': 'websocket_action',
             'data': content
         }
 
-        await self.channel_layer.group_send(self.playlist_group_name, message)
+        if content['action'] == "update_status":
+            if not self.is_host:  # Only host can update status
+                return
+            elif 'to' in content:  # Update is destined to specific user that made a status query
+                await self.channel_layer.group_send(content['to'], message)
+            else:  # Update is destined to all users
+                await self.channel_layer.group_send(self.group_playlist, message)
+        elif content['action'] == "query_status":  # Add username to query status metadata and only send it to the host
+            content['from'] = self.group_playlist_user
+            await self.channel_layer.group_send(self.group_playlist_host, message)
 
     async def websocket_action(self, event):
         await self.send_json(event['data'])

@@ -1,9 +1,12 @@
 <template>
+  <button class="btn btn-primary btn-lg" v-on:click="queryStatus">
+    Resync with host
+  </button>
   <MediaPlayer
     :next-media-prop="nextMedia"
     :media-playing-event-timing="0"
     :remote-status="remoteStatus"
-    @play="queryStatus"
+    @initialPlaybackStarted="queryStatus"
   ></MediaPlayer>
 </template>
 

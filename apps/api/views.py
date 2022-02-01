@@ -98,9 +98,9 @@ class PersistAndNext(APIView):
         dynamic_playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
         # Check rights to modify playlist
-        # playlist_author = DynamicPlaylistUser.objects.get(dynamic_playlist=dynamic_playlist, is_author=True).user
-        # if playlist_author != request.user:
-        #     return Response(status=status.HTTP_403_FORBIDDEN)
+        playlist_author = DynamicPlaylistUser.objects.get(dynamic_playlist=dynamic_playlist, is_author=True).user
+        if playlist_author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         if request.data["trackToPersist"]:
             dynamic_playlist.persist_track(request.data["trackToPersist"])

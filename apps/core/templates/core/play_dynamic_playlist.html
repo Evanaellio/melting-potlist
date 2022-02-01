@@ -14,10 +14,8 @@
         {% csrf_token %}
 
         {% if is_host %}
-            <p>HOST</p>
             <play-dynamic-playlist-host></play-dynamic-playlist-host>
         {% else %}
-            <p>LISTENER</p>
             <play-dynamic-playlist-listener></play-dynamic-playlist-listener>
         {% endif %}
     </div>

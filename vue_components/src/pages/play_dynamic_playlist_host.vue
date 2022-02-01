@@ -9,6 +9,8 @@
     @select="onSelectUser"
     @remove="onRemoveUser"
   ></Multiselect>
+
+  <br />
   <MediaPlayer
     ref="mediaPlayer"
     :next-media-prop="nextMedia"
@@ -16,9 +18,9 @@
     @media-playing="onMediaPlaying"
     @media-started="onMediaStarted"
     @media-played="onMediaPlayed"
-    @media-seeked="updateStatus"
-    @play="updateStatus"
-    @pause="updateStatus"
+    @media-seeked="updateStatus()"
+    @play="updateStatus()"
+    @pause="updateStatus()"
   ></MediaPlayer>
 </template>
 
@@ -111,13 +113,14 @@ export default {
     onWebsocketMessage(event) {
       const data = JSON.parse(event.data);
 
-      if (data.action === "query_status") {
-        this.updateStatus();
+      if (data.action === "query_status" && data.from) {
+        this.updateStatus(data.from);
       }
     },
-    updateStatus() {
+    updateStatus(toUser = undefined) {
       this.sendWebsocketData({
         action: "update_status",
+        to: toUser,
         status: this.$refs.mediaPlayer.status()
       });
     }
