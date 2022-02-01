@@ -21,6 +21,8 @@ RUN pip install -r requirements.txt
 COPY . /usr/src/app/
 
 # Build vue webpack bundle
+WORKDIR /usr/src/app/vue_components
 RUN pnpm run build
 
+WORKDIR /usr/src/app
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
