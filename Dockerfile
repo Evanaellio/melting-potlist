@@ -1,5 +1,7 @@
 FROM nikolaik/python-nodejs:python3.9-nodejs14
 
+RUN npm install -g pnpm
+
 WORKDIR /usr/src/app
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -14,11 +16,11 @@ RUN pip install -r requirements.txt
 RUN mkdir /usr/src/app/vue_components
 WORKDIR /usr/src/app/vue_components
 COPY ["./vue_components/package.json", "./vue_components/package-lock.json",  "./"]
-RUN npm install --global --production
+RUN pnpm install --global --production
 
 COPY . /usr/src/app/
 
-RUN npm run build
+RUN pnpm run build
 
 WORKDIR /usr/src/app
 
