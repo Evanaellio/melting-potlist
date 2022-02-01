@@ -27,7 +27,7 @@
 <script>
 import MediaPlayer from "../components/MediaPlayer.vue";
 import Multiselect from "../components/Multiselect.vue";
-import ReconnectingWebSocket from "reconnecting-websocket";
+// import ReconnectingWebSocket from "reconnecting-websocket";
 
 export default {
   components: {
@@ -111,6 +111,8 @@ export default {
       this.websocket.send(JSON.stringify(data));
     },
     onWebsocketMessage(event) {
+      console.log("Message from " + this.websocket, event);
+
       const data = JSON.parse(event.data);
 
       if (data.action === "query_status" && data.from) {
@@ -142,11 +144,12 @@ export default {
 
     this.persistPlayedSongAndFetchNext();
 
-    this.websocket = new ReconnectingWebSocket(
-      `${this.$window.context.websocketProtocol}://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`
+    this.websocket = new WebSocket(
+        `${this.$window.context.websocketProtocol}://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`
     );
     this.websocket.addEventListener("message", this.onWebsocketMessage);
     this.websocket.addEventListener("close", () => {
+      console.log(this.websocket);
       console.error("Websocket closed unexpectedly");
     });
   }
