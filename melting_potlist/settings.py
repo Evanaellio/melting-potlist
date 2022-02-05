@@ -181,4 +181,7 @@ LOGGING = DEFAULT_LOGGING
 
 VERSION = "2.0.1"
 
+# Allows token scope to not match requested scope
+os.environ.setdefault('OAUTHLIB_RELAX_TOKEN_SCOPE', '1')
+
 django_yamlconf.load()
