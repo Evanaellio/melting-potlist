@@ -17,5 +17,6 @@ app.component(
 );
 
 app.config.globalProperties.$window = window;
+window.vue_app = app; // Used to debug vue app in production
 
 app.mount("#vue_app");
