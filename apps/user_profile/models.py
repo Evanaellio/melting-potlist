@@ -106,14 +106,14 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
     # Increase weight for each user that never listened to the track, but only after one warmup song from this user
     if has_user_warmed_up:
         for i in range(active_users_count - len(track_statistics)):
-            weight += 4
+            weight += 5
 
     for merged_stat in merged_stats.values():
         delta = now - merged_stat["date_last_listened"]
         total_hours = delta.days * 24 + (delta.seconds / 3600)
 
         if delta.days >= 1:
-            weight += (delta.days / 30) * 3
+            weight += (min(delta.days, 30) / 30) * 3
         elif total_hours <= 8:
             weight *= 0.5
 
