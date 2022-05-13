@@ -1,4 +1,5 @@
 import datetime
+import math
 import random
 from collections import defaultdict
 from typing import List, Optional
@@ -108,6 +109,8 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
         for i in range(active_users_count - len(track_statistics)):
             weight += 5
 
+    listened_recently_count = 0
+
     for merged_stat in merged_stats.values():
         delta = now - merged_stat["date_last_listened"]
         total_hours = delta.days * 24 + (delta.seconds / 3600)
@@ -115,9 +118,9 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
         if delta.days >= 1:
             weight += (min(delta.days, 30) / 30) * 3
         elif total_hours <= 8:
-            weight *= 0.5
+            listened_recently_count += 1
 
-    return weight
+    return weight * math.pow(0.5, listened_recently_count)
 
 
 class DynamicPlaylist(models.Model):
