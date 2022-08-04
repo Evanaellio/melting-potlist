@@ -120,7 +120,7 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
         elif total_hours <= 8:
             listened_recently_count += 1
 
-    return weight * math.pow(0.5, listened_recently_count)
+    return weight if not listened_recently_count else 0.0000001
 
 
 class DynamicPlaylist(models.Model):
