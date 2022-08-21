@@ -9,12 +9,18 @@
     @select="onSelectUser"
     @remove="onRemoveUser"
   ></Multiselect>
+
+  <br />
   <MediaPlayer
+    ref="mediaPlayer"
     :next-media-prop="nextMedia"
     :media-playing-event-timing="8"
     @media-playing="onMediaPlaying"
     @media-started="onMediaStarted"
     @media-played="onMediaPlayed"
+    @media-seeked="updateStatus()"
+    @play="updateStatus()"
+    @pause="updateStatus()"
   ></MediaPlayer>
 </template>
 
@@ -36,6 +42,7 @@ export default {
       playlistId: null,
       csrfToken: null,
       nextMedia: null,
+      websocket: null,
       currentMediaPersisted: false
     };
   },
@@ -82,6 +89,7 @@ export default {
       )
         .then(response => response.json())
         .then(jsonData => (this.nextMedia = jsonData))
+        .then(() => this.updateStatus())
         .catch(reason => console.error(reason));
     },
     onMediaPlaying(event) {
@@ -97,11 +105,29 @@ export default {
       if (event.nextMedia === null) {
         this.persistPlayedSongAndFetchNext(event.currentMedia.id);
       }
+    },
+    sendWebsocketData(data) {
+      this.websocket.send(JSON.stringify(data));
+    },
+    onWebsocketMessage(event) {
+      console.log("Message from " + this.websocket, event);
+
+      const data = JSON.parse(event.data);
+
+      if (data.action === "query_status" && data.from) {
+        this.updateStatus(data.from);
+      }
+    },
+    updateStatus(toUser = undefined) {
+      this.sendWebsocketData({
+        action: "update_status",
+        to: toUser,
+        status: this.$refs.mediaPlayer.status()
+      });
     }
   },
   created() {
     this.playlistId = this.$window.context.playlistId;
-    console.log("CREATED with playlist : " + this.playlistId);
   },
   mounted() {
     this.users.all = this.$window.context.users.sort(
@@ -116,6 +142,15 @@ export default {
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
     this.persistPlayedSongAndFetchNext();
+
+    this.websocket = new WebSocket(
+        `${this.$window.context.websocketProtocol}://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`
+    );
+    this.websocket.addEventListener("message", this.onWebsocketMessage);
+    this.websocket.addEventListener("close", () => {
+      console.log(this.websocket);
+      console.error("Websocket closed unexpectedly");
+    });
   }
 };
 </script>

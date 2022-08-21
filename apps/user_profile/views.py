@@ -138,6 +138,7 @@ def synchronize_playlist(request, playlist_id):
     return redirect(reverse('user_profile:all_playlists'))
 
 
+@login_required
 def toggle_playlist(request, playlist_id):
     try:
         playlist = request.user.playlists.get(id=playlist_id)

@@ -91,13 +91,18 @@ class DynamicPlaylistUsers(APIView):
 class PersistAndNext(APIView):
 
     def post(self, request, playlist_id, format=None):
-        playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
+        dynamic_playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
+
+        # Check rights to modify playlist
+        playlist_author = DynamicPlaylistUser.objects.get(dynamic_playlist=dynamic_playlist, is_author=True).user
+        if playlist_author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         if request.data["trackToPersist"]:
-            playlist.persist_track(request.data["trackToPersist"])
+            dynamic_playlist.persist_track(request.data["trackToPersist"])
 
         for i in range(5):
-            next_user_track: UserTrack = playlist.find_next_track()
+            next_user_track: UserTrack = dynamic_playlist.find_next_track()
             if not next_user_track:
                 raise BadRequest('No active user in playlist')
 

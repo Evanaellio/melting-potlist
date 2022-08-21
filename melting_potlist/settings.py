@@ -22,6 +22,8 @@ BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG_DISCORD_LOGIN_MOCK = False
+# Enables a mock Discord user when cancelling Discord OAuth, don't turn on in production either!
 DEBUG = False
 
 ALLOWED_HOSTS = []
@@ -29,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
     'apps.discord_login',
     'apps.user_profile',
     'apps.api',
+    'apps.websocket_sync',
 ]
 
 MIDDLEWARE = [
@@ -78,7 +82,15 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'melting_potlist.wsgi.application'
+ASGI_APPLICATION = "melting_potlist.asgi.application"
+
+# Channel Layers
+# https://channels.readthedocs.io/en/stable/topics/channel_layers.html
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -140,7 +152,7 @@ STATIC_URL = '/content/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
-    BASE_DIR / "vue_components" / "dist", # Static resources compiled by vue service build (using Webpack)
+    BASE_DIR / "vue_components" / "dist",  # Static resources compiled by vue service build (using Webpack)
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

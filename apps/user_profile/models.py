@@ -1,4 +1,5 @@
 import datetime
+import math
 import random
 from collections import defaultdict
 from typing import List, Optional
@@ -13,6 +14,8 @@ from django.db.models.constraints import UniqueConstraint
 from django.utils import timezone
 
 from apps.discord_login.models import DiscordGuild
+
+VERY_LOW_WEIGHT = 0.0000001
 
 
 class Track(models.Model):
@@ -89,7 +92,8 @@ class UserSettings(models.Model):
                                              track_uri__unavailable=False))
 
 
-def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count) -> float:
+def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count,
+                                    has_user_warmed_up) -> float:
     # Merge all stats to aggregate a single listen count and date for each tuple (user, track_uri)
     merged_stats = defaultdict(
         lambda: {"date_last_listened": datetime.datetime.min.replace(tzinfo=pytz.UTC), "listen_count": 0})
@@ -102,23 +106,23 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
     now = django.utils.timezone.now()
     weight = 1.0
 
-    # Increase weight for each user that never listened to the track
-    for i in range(active_users_count - len(track_statistics)):
-        weight *= 10
+    # Increase weight for each user that never listened to the track, but only after one warmup song from this user
+    if has_user_warmed_up:
+        for i in range(active_users_count - len(track_statistics)):
+            weight += 6
+
+    listened_recently_count = 0
 
     for merged_stat in merged_stats.values():
         delta = now - merged_stat["date_last_listened"]
         total_hours = delta.days * 24 + (delta.seconds / 3600)
 
-        if delta.days > 31:
-            weight *= 5
-        elif delta.days > 5:
-            pass  # Don't change weight
-        elif total_hours > 2:
-            weight *= 0.1
-        else:
-            weight *= 0.000001
-    return weight
+        if delta.days >= 1:
+            weight += (min(delta.days, 60) / 60) * 3
+        elif total_hours <= 8:
+            listened_recently_count += 1
+
+    return weight if not listened_recently_count else VERY_LOW_WEIGHT
 
 
 class DynamicPlaylist(models.Model):
@@ -181,6 +185,8 @@ class DynamicPlaylist(models.Model):
         all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
         all_track_uris = list(map(lambda track: track.track_uri.uri, all_tracks))
 
+        has_user_warmed_up = self.tracks.filter(user_playlist__user=chosen_user.user).exists()
+
         if is_group_mode:
             users_listening = list(map(lambda dyn_playlist_user: dyn_playlist_user.user, active_users))
         else:
@@ -192,7 +198,7 @@ class DynamicPlaylist(models.Model):
         weights = []
         for user_track_uri in all_track_uris:
             filtered_stats = list(filter(lambda stat: stat.user_track.track_uri.uri == user_track_uri, statistics))
-            weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening)))
+            weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening), has_user_warmed_up))
 
         return random.choices(all_tracks, k=1, weights=weights)[0]
 
