@@ -66,10 +66,6 @@ def fetch_media(media_url):
     }
 
 
-def get_user_track_stats(current_user, user_track):
-    pass  # One day, spoon
-
-
 class DynamicPlaylistUsers(APIView):
     parser_classes = (parsers.JSONParser,)
 

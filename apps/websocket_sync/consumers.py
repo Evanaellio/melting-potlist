@@ -8,14 +8,6 @@ from django.contrib.auth.models import AbstractUser
 from apps.user_profile.models import DynamicPlaylist
 from unidecode import unidecode
 
-'''
-Implementation :
-
-Afficher côté host et côté listeners la liste des utilisateurs connectés à la playlist (ou bien les synchroniser en temps réel avec qui accède ou pas)
-Côté listeners, seulement ça et pas le multiselect des gens
-
-'''
-
 
 def cleanup_group_name(group_name):
     return re.sub('[^a-zA-Z0-9_.-]', '_', unidecode(group_name))

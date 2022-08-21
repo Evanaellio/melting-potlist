@@ -12,7 +12,6 @@
 
 <script>
 import MediaPlayer from "../components/MediaPlayer.vue";
-// import ReconnectingWebSocket from "reconnecting-websocket";
 
 export default {
   components: {
@@ -20,17 +19,11 @@ export default {
   },
   data() {
     return {
-      users: {
-        selected: [],
-        all: []
-      },
       playlistId: null,
       csrfToken: null,
       nextMedia: null,
       websocket: null,
-      remoteStatus: null,
-      initialRemoteSync: false,
-      currentMediaPersisted: false
+      remoteStatus: null
     };
   },
   methods: {
@@ -41,8 +34,6 @@ export default {
       this.websocket.send(JSON.stringify(data));
     },
     onWebsocketMessage(event) {
-      console.log("Message from " + this.websocket, event);
-
       const data = JSON.parse(event.data);
 
       if (data.action === "update_status") {

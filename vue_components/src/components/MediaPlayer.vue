@@ -100,14 +100,6 @@ export default {
       this.nextMedia = newVal;
       this.playNextSong(false);
     },
-    // audioOnly: function(newVal) {
-    //   if(newVal === false) {
-    //     console.log("AudioOnly change", this.$refs.video_player.paused);
-    //     this.$refs.video_player.play();
-    //     this.syncAudioAndVideo();
-    //     console.log("AudioOnly change", this.$refs.video_player.paused);
-    //   }
-    // },
     remoteStatus: function(newStatus) {
       this.currentMedia = newStatus.currentMedia;
       this.nextMedia = newStatus.nextMedia;

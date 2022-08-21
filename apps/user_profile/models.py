@@ -15,6 +15,8 @@ from django.utils import timezone
 
 from apps.discord_login.models import DiscordGuild
 
+VERY_LOW_WEIGHT = 0.0000001
+
 
 class Track(models.Model):
     title = models.TextField()
@@ -120,7 +122,7 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
         elif total_hours <= 8:
             listened_recently_count += 1
 
-    return weight if not listened_recently_count else 0.0000001
+    return weight if not listened_recently_count else VERY_LOW_WEIGHT
 
 
 class DynamicPlaylist(models.Model):

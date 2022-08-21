@@ -27,7 +27,6 @@
 <script>
 import MediaPlayer from "../components/MediaPlayer.vue";
 import Multiselect from "../components/Multiselect.vue";
-// import ReconnectingWebSocket from "reconnecting-websocket";
 
 export default {
   components: {

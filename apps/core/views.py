@@ -197,8 +197,7 @@ def create_dynamic_playlist(request, guild_id):
     return render(request, 'core/create_dynamic_playlist.html', context)
 
 
-# For now, no authentication required for watching playlists
-# @login_required
+# No authentication is required for watching playlists, it allows to have guests and is less cumbersome for users
 def play_dynamic_playlist(request, playlist_id):
     playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
@@ -225,7 +224,7 @@ def play_dynamic_playlist(request, playlist_id):
         'json_context': json.dumps({
             'users': users,
             'playlistId': playlist.id,
-            'websocketProtocol': 'ws' if settings.DEBUG is True else 'wss',
+            'websocketProtocol': 'ws' if settings.DEBUG else 'wss',
         }),
         'title': f"🎵 {playlist.title}",
         'is_host': playlist.users.get(dynamicplaylistuser__is_author=True) == request.user
