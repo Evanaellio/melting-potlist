@@ -1,18 +1,16 @@
 import datetime
 import json
-import urllib.parse
+import operator
 from dataclasses import dataclass
+from typing import List
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, Http404
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
 from django.db.models import Q
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 
 from apps.discord_login.models import DiscordGuild, DiscordUser
-from .playlist_generator import generate_youtube, generate_pls
 from ..user_profile.models import DynamicPlaylist
 
 
@@ -58,15 +56,20 @@ def about(request):
     return render(request, 'core/about.html', context=context)
 
 
-def make_guild(guild: DiscordGuild):
-    return {
+def make_guild(guild: DiscordGuild, include_users: bool = False):
+    guild_dict = {
         'name': guild.name,
-        'id': guild.id,
+        'id': str(guild.id),
         'image': guild.image,
         'default_image': guild.default_image,
         'is_ready': guild.is_ready,
         'users_ready_count': len(guild.users_ready)
     }
+
+    if include_users:
+        guild_dict["users"] = list(map(make_multiselect_user, guild.users.all()))
+
+    return guild_dict
 
 
 def make_user(discord_user: DiscordUser):
@@ -104,56 +107,28 @@ def make_multiselect_guild(guild: DiscordGuild):
 
 @login_required
 def groups(request):
-    user_guilds = list(map(make_guild, request.user.discord.guilds.all()))
-    user_guilds.sort(key=lambda guild: guild['users_ready_count'], reverse=True)
+    user_query = Q(users__user=request.user)
+    user_guilds = list(
+        map(make_multiselect_guild,
+            filter(lambda guild: guild.is_ready, DiscordGuild.objects.filter(user_query)))
+    )
+    other_guilds = list(
+        map(make_multiselect_guild,
+            filter(lambda guild: guild.is_ready, DiscordGuild.objects.filter(~user_query)))
+    )
+    get_name = operator.itemgetter('name')
+    user_guilds.sort(key=get_name)
+    other_guilds.sort(key=get_name)
+
     context = {
-        'user_guilds': user_guilds,
+        'json_context': json.dumps({
+            'user_guilds': user_guilds,
+            'other_guilds': other_guilds,
+            'create_playlist_url': reverse("core:create_dynamic_playlist")
+        }),
     }
 
     return render(request, 'core/groups.html', context)
-
-
-@login_required
-def group_playlist(request, guild_id):
-    guild = get_object_or_404(DiscordGuild, id=guild_id)
-    users = list(map(make_multiselect_user, guild.users.all()))
-
-    context = {
-        'users_json': json.dumps(users),
-        'title': guild.name,
-        'guild_id': guild.id,
-    }
-
-    return render(request, 'core/group_playlist.html', context)
-
-
-@login_required
-def generate_playlist(request, guild_id):
-    try:
-        guild = request.user.discord.guilds.get(id=guild_id)
-    except DiscordGuild.DoesNotExist:
-        raise Http404()
-
-    mode = request.POST['mode']
-    sync = 'nosync' not in request.POST
-
-    user_ids = set(map(int, request.POST['users'].split(',')))
-    selected_users = list(map(lambda discord_user: discord_user.user, guild.users.filter(id__in=user_ids)))
-
-    if sync:
-        for user in selected_users:
-            for enabled_playlist in user.playlists.filter(enabled=True):
-                enabled_playlist.synchronize()
-
-    if mode == 'youtube':
-        generated_playlists = generate_youtube(selected_users)
-        query = urllib.parse.urlencode({'playlists': ','.join(generated_playlists)})
-        return redirect(f"{reverse('core:player')}?{query}")
-    elif mode == 'pls':
-        generated_pls = generate_pls(selected_users)
-        response = HttpResponse(generated_pls, content_type="audio/x-scpls")
-        response['Content-Disposition'] = 'inline; filename=playlist.pls'
-        return response
 
 
 def player(request):
@@ -181,17 +156,30 @@ def subtitles(request):
     return render(request, 'core/subtitles.webvtt', context, content_type="text/vtt")
 
 
+def get_guilds_without_duplicate_users(guilds: List[DiscordGuild]):
+    # Remove users appearing in a guild from subsequent guilds
+    already_appeared_users = set()
+    guild_dicts = [make_guild(guild, include_users=True) for guild in guilds]
+    for guild_dict in guild_dicts:
+        user_ids_in_guild = set(map(lambda user: user["id"], guild_dict["users"]))
+        guild_dict["users"] = list(filter(lambda user: user["id"] not in already_appeared_users, guild_dict["users"]))
+        already_appeared_users.update(user_ids_in_guild)
+
+    return guild_dicts
+
+
 @login_required
-def create_dynamic_playlist(request, guild_id):
-    guild = get_object_or_404(DiscordGuild, id=guild_id)
-    users = list(map(make_multiselect_user, guild.users.all()))
+def create_dynamic_playlist(request):
+    print(request.POST)
+
+    selected_guilds = request.POST.get('selectedGuilds').split(',')
+    guilds = [get_object_or_404(DiscordGuild, id=guild_id) for guild_id in selected_guilds]
 
     context = {
         'json_context': json.dumps({
-            'users': users,
-            'guild_id': str(guild_id),
+            'guilds': get_guilds_without_duplicate_users(guilds),
         }),
-        'title': guild.name,
+        'title': "Create new playlist",
     }
 
     return render(request, 'core/create_dynamic_playlist.html', context)
@@ -201,28 +189,19 @@ def create_dynamic_playlist(request, guild_id):
 def play_dynamic_playlist(request, playlist_id):
     playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
-    if playlist.groups.exists():
-        users = list(map(lambda discord_user: make_multiselect_user(discord_user),
-                         DiscordUser.objects.filter(guilds__in=playlist.groups.all())))
-    else:
-        users = list(map(lambda user: make_multiselect_user(user.discord), playlist.users.all()))
+    guilds = get_guilds_without_duplicate_users(playlist.groups.all())
 
     active_users = list(
         map(lambda user: str(user.discord.id), playlist.users.filter(dynamicplaylistuser__is_active=True)))
 
-    # Synchronize active users playlists before playing (except in solo mode)
-    if playlist.groups.exists():
-        for active_user in playlist.users.filter(dynamicplaylistuser__is_active=True):
-            for enabled_playlist in active_user.playlists.filter(enabled=True):
-                enabled_playlist.synchronize()
-
-    for multiselect_user in users:
-        multiselect_user["inInitialSelection"] = \
-            multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
+    for guild in guilds:
+        for multiselect_user in guild["users"]:
+            multiselect_user["inInitialSelection"] = \
+                multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
 
     context = {
         'json_context': json.dumps({
-            'users': users,
+            'guilds': guilds,
             'playlistId': playlist.id,
             'websocketProtocol': 'ws' if settings.DEBUG else 'wss',
         }),

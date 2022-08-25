@@ -1,5 +1,4 @@
 import datetime
-import math
 import random
 from collections import defaultdict
 from typing import List, Optional
@@ -131,25 +130,25 @@ class DynamicPlaylist(models.Model):
     groups = models.ManyToManyField(DiscordGuild, related_name='dynamic_playlists')
     users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
     title = models.TextField(default="Unnamed dynamic playlist")
+    is_group_mode = models.BooleanField(default=True)
 
     def persist_track(self, track_id_to_persist):
-        is_group_mode = self.groups.exists()
-        playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
 
         persisted_track = UserTrack.objects.get(id=track_id_to_persist)
 
-        # Update (or create) listening stats for active users (in group mode) or playlist author (in solo mode)
-        for listening_user in (active_users if is_group_mode else [playlist_author]):
-            listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
-                listener=listening_user.user,
-                user_track=persisted_track
-            )
+        # Update (or create) listening stats for active users (only in group mode)
+        if self.is_group_mode:
+            for listening_user in active_users:
+                listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
+                    listener=listening_user.user,
+                    user_track=persisted_track
+                )
 
-            if not listen_stats_created:
-                listen_stats.listen_count += 1
-                listen_stats.date_last_listened = django.utils.timezone.now()
-                listen_stats.save()
+                if not listen_stats_created:
+                    listen_stats.listen_count += 1
+                    listen_stats.date_last_listened = django.utils.timezone.now()
+                    listen_stats.save()
 
         # Save track to dynamic playlist's list of tracks
         DynamicPlaylistTrack.objects.create(
@@ -164,10 +163,9 @@ class DynamicPlaylist(models.Model):
         persisted_track_user.save()
 
     def find_next_track(self) -> Optional[UserTrack]:
-        is_group_mode = self.groups.exists()
         playlist_author = self.dynamic_playlist_users.get(is_author=True)
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
-        users_still_in_rotation = list(filter(lambda user: not user.played_in_rotation, active_users))
+        users_still_in_rotation = list(filter(lambda active_user: not active_user.played_in_rotation, active_users))
 
         if not active_users:
             return None
@@ -182,12 +180,19 @@ class DynamicPlaylist(models.Model):
             users_still_in_rotation = active_users
 
         chosen_user = random.choice(users_still_in_rotation)
+
+        # Synchronize each chosen user's playlist that have last been synchronized more than an hour ago
+        if self.is_group_mode:
+            for enabled_playlist in chosen_user.user.playlists.filter(enabled=True):
+                if timezone.now() - enabled_playlist.last_synchronized > datetime.timedelta(hours=1):
+                    enabled_playlist.synchronize()
+
         all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
         all_track_uris = list(map(lambda track: track.track_uri.uri, all_tracks))
 
         has_user_warmed_up = self.tracks.filter(user_playlist__user=chosen_user.user).exists()
 
-        if is_group_mode:
+        if self.is_group_mode:
             users_listening = list(map(lambda dyn_playlist_user: dyn_playlist_user.user, active_users))
         else:
             users_listening = [playlist_author.user]
