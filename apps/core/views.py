@@ -113,49 +113,6 @@ def groups(request):
     return render(request, 'core/groups.html', context)
 
 
-@login_required
-def group_playlist(request, guild_id):
-    guild = get_object_or_404(DiscordGuild, id=guild_id)
-    users = list(map(make_multiselect_user, guild.users.all()))
-
-    context = {
-        'users_json': json.dumps(users),
-        'title': guild.name,
-        'guild_id': guild.id,
-    }
-
-    return render(request, 'core/group_playlist.html', context)
-
-
-@login_required
-def generate_playlist(request, guild_id):
-    try:
-        guild = request.user.discord.guilds.get(id=guild_id)
-    except DiscordGuild.DoesNotExist:
-        raise Http404()
-
-    mode = request.POST['mode']
-    sync = 'nosync' not in request.POST
-
-    user_ids = set(map(int, request.POST['users'].split(',')))
-    selected_users = list(map(lambda discord_user: discord_user.user, guild.users.filter(id__in=user_ids)))
-
-    if sync:
-        for user in selected_users:
-            for enabled_playlist in user.playlists.filter(enabled=True):
-                enabled_playlist.synchronize()
-
-    if mode == 'youtube':
-        generated_playlists = generate_youtube(selected_users)
-        query = urllib.parse.urlencode({'playlists': ','.join(generated_playlists)})
-        return redirect(f"{reverse('core:player')}?{query}")
-    elif mode == 'pls':
-        generated_pls = generate_pls(selected_users)
-        response = HttpResponse(generated_pls, content_type="audio/x-scpls")
-        response['Content-Disposition'] = 'inline; filename=playlist.pls'
-        return response
-
-
 def player(request):
     context = {
         'playlists': request.GET.get('playlists').split(','),
