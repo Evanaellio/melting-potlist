@@ -1,37 +1,23 @@
 {% extends "core/navigation.html" %}
 {% load static %}
+{% load render_bundle from webpack_loader %}
 
 {% block css %}
-    <link rel="stylesheet" href="{% static 'css/core/groups.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
+    <link rel="stylesheet" href="{% static 'css/core/group_playlist.css' %}">
 {% endblock %}
 
 {% block content %}
-    <div class="heading text-center">
-        <h1>Discord groups</h1>
-        {% for guild in user_guilds %}
-            <a href="{% url 'core:create_dynamic_playlist' guild_id=guild.id %}" class="guild-icon"
-                    {% if not guild.is_ready %} style="opacity:20%; cursor: not-allowed;" {% endif %}>
-                <img src="{{ guild.image }}" alt="{{ guild.name }}" data-bs-toggle="tooltip"
-                     data-default-image="{{ guild.default_image }}"
-                     onerror="this.src = this.dataset.defaultImage"
-                     data-bs-placement="bottom" data-bs-html="true"
-                        {% if guild.is_ready %}
-                     title="{{ guild.name }}<br>{{ guild.users_ready_count }} curators ready to share some music 🥳"
-                        {% else %}
-                     title="{{ guild.name }}<br>Nobody here except you 😟"
-                        {% endif %}
-                />
-            </a>
-        {% endfor %}
+    <h5>{{ title }}</h5>
+    <br/>
+    <div id="vue_app">
+        {% csrf_token %}
+        <groups></groups>
     </div>
+
+    {% render_bundle 'app' %}
 {% endblock %}
 
 {% block javascript %}
-    <script>
-        // Enable tooltips for this page
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-    </script>
+    <script>window.context = {{ json_context | safe }};</script>
 {% endblock %}

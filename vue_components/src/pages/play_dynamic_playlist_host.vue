@@ -1,26 +1,31 @@
 <template>
-  <Multiselect
-    v-model="users.selected"
-    :options="users.all"
-    label="name"
-    track-by="id"
-    :option-height="60"
-    placeholder=""
-    @select="onSelectUser"
-    @remove="onRemoveUser"
-  ></Multiselect>
+  <template v-for="guild in guilds" v-bind:key="guild.id">
+    <div class="mb-3">
+      <label class="form-label">{{ guild.name }}</label>
+      <Multiselect
+          v-model="guild.users.selected"
+          :options="guild.users.all"
+          label="name"
+          track-by="id"
+          :option-height="60"
+          placeholder=""
+          @select="onSelectUser"
+          @remove="onRemoveUser"
+      ></Multiselect>
+    </div>
+  </template>
 
-  <br />
+  <br/>
   <MediaPlayer
-    ref="mediaPlayer"
-    :next-media-prop="nextMedia"
-    :media-playing-event-timing="8"
-    @media-playing="onMediaPlaying"
-    @media-started="onMediaStarted"
-    @media-played="onMediaPlayed"
-    @media-seeked="updateStatus()"
-    @play="updateStatus()"
-    @pause="updateStatus()"
+      ref="mediaPlayer"
+      :next-media-prop="nextMedia"
+      :media-playing-event-timing="8"
+      @media-playing="onMediaPlaying"
+      @media-started="onMediaStarted"
+      @media-played="onMediaPlayed"
+      @media-seeked="updateStatus()"
+      @play="updateStatus()"
+      @pause="updateStatus()"
   ></MediaPlayer>
 </template>
 
@@ -35,10 +40,7 @@ export default {
   },
   data() {
     return {
-      users: {
-        selected: [],
-        all: []
-      },
+      guilds: [],
       playlistId: null,
       csrfToken: null,
       nextMedia: null,
@@ -48,7 +50,12 @@ export default {
   },
   computed: {
     selectedUsers() {
-      return this.users.selected.map(item => item.id);
+      const selectedUsers = [];
+      for (const guild of this.guilds) {
+        const userIds = guild.users.selected.map(user => user.id);
+        selectedUsers.push(...userIds);
+      }
+      return selectedUsers;
     }
   },
   methods: {
@@ -65,7 +72,7 @@ export default {
           "Content-Type": "application/json",
           "X-CSRFToken": this.csrfToken
         },
-        body: JSON.stringify({ is_active: isActive })
+        body: JSON.stringify({is_active: isActive})
       }).then(() => {
         if (this.currentMediaPersisted) {
           this.persistPlayedSongAndFetchNext();
@@ -77,20 +84,20 @@ export default {
         this.currentMediaPersisted = true;
       }
       return fetch(
-        `/api/dynamicplaylists/${this.playlistId}/persist_and_next/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": this.csrfToken
-          },
-          body: JSON.stringify({ trackToPersist: playedSongId })
-        }
+          `/api/dynamicplaylists/${this.playlistId}/persist_and_next/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": this.csrfToken
+            },
+            body: JSON.stringify({trackToPersist: playedSongId})
+          }
       )
-        .then(response => response.json())
-        .then(jsonData => (this.nextMedia = jsonData))
-        .then(() => this.updateStatus())
-        .catch(reason => console.error(reason));
+          .then(response => response.json())
+          .then(jsonData => (this.nextMedia = jsonData))
+          .then(() => this.updateStatus())
+          .catch(reason => console.error(reason));
     },
     onMediaPlaying(event) {
       if (event.elapsedTime > 30 && event.nextMedia === null) {
@@ -130,14 +137,16 @@ export default {
     this.playlistId = this.$window.context.playlistId;
   },
   mounted() {
-    this.users.all = this.$window.context.users.sort(
-      (a, b) =>
-        a.$isDisabled - b.$isDisabled || ("" + a.name).localeCompare(b.name)
-    );
-
-    this.users.selected = this.users.all.filter(
-      user => user.inInitialSelection
-    );
+    this.guilds = this.$window.context.guilds;
+    for (const guild of this.guilds) {
+      guild.users.all = guild.users.sort(
+          (a, b) =>
+              a.$isDisabled - b.$isDisabled || ("" + a.name).localeCompare(b.name)
+      );
+      guild.users.selected = guild.users.all.filter(
+          user => user.inInitialSelection
+      );
+    }
 
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
