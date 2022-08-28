@@ -1,74 +1,75 @@
 <template>
+  <vue-title v-if="currentMedia" :title="currentMedia.title"></vue-title>
   <div v-if="currentMedia">
     <video
-      v-if="!audioOnly"
-      v-show="initialPlaybackStarted"
-      ref="video_player"
-      id="video-player"
-      muted
-      style="width: 100%"
-      height="675"
-      v-on:loadedmetadata="syncAudioAndVideo"
-      v-on:playing="syncAudioAndVideo"
-      :src="currentMedia.video"
-      v-on:dblclick="toggleFullscreen"
+        v-if="!audioOnly"
+        v-show="initialPlaybackStarted"
+        ref="video_player"
+        id="video-player"
+        muted
+        style="width: 100%"
+        height="675"
+        v-on:loadedmetadata="syncAudioAndVideo"
+        v-on:playing="syncAudioAndVideo"
+        :src="currentMedia.video"
+        v-on:dblclick="toggleFullscreen"
     >
       <track
-        label="English"
-        kind="subtitles"
-        srclang="en"
-        default
-        :src="currentMedia.subtitles_url"
+          label="English"
+          kind="subtitles"
+          srclang="en"
+          default
+          :src="currentMedia.subtitles_url"
       />
     </video>
 
     <button
-      type="button"
-      class="btn btn-primary btn-lg btn-block"
-      v-on:click="startInitialPlayback"
-      v-if="!initialPlaybackStarted"
+        type="button"
+        class="btn btn-primary btn-lg btn-block"
+        v-on:click="startInitialPlayback"
+        v-if="!initialPlaybackStarted"
     >
       Click here to start music playback
     </button>
 
     <audio
-      ref="audio_player"
-      id="audio-player"
-      controls
-      v-bind:autoplay="initialPlaybackStarted ? 'autoplay' : undefined"
-      style="width: 100%"
-      :src="currentMedia.audio"
-      v-show="initialPlaybackStarted"
-      v-on:play="onAudioPlay"
-      v-on:pause="onAudioPause"
-      v-on:seeked="onMediaSeeked"
-      v-on:ended="onMediaEnded"
+        ref="audio_player"
+        id="audio-player"
+        controls
+        v-bind:autoplay="initialPlaybackStarted ? 'autoplay' : undefined"
+        style="width: 100%"
+        :src="currentMedia.audio"
+        v-show="initialPlaybackStarted"
+        v-on:play="onAudioPlay"
+        v-on:pause="onAudioPause"
+        v-on:seeked="onMediaSeeked"
+        v-on:ended="onMediaEnded"
     ></audio>
 
     <div id="buttons" v-show="initialPlaybackStarted">
       <button
-        type="button"
-        class="btn btn-outline-primary"
-        style="font-size: 1.5rem"
-        v-on:click="audioOnly = !audioOnly"
+          type="button"
+          class="btn btn-outline-primary"
+          style="font-size: 1.5rem"
+          v-on:click="audioOnly = !audioOnly"
       >
         <i
-          :class="audioOnly ? 'bi bi-camera-video' : 'bi bi-camera-video-off'"
+            :class="audioOnly ? 'bi bi-camera-video' : 'bi bi-camera-video-off'"
         ></i>
       </button>
       <button
-        type="button"
-        class="btn btn-outline-primary"
-        style="font-size: 1.5rem"
-        v-on:click="toggleFullscreen"
+          type="button"
+          class="btn btn-outline-primary"
+          style="font-size: 1.5rem"
+          v-on:click="toggleFullscreen"
       >
         <i class="bi bi-arrows-fullscreen"></i>
       </button>
       <a :href="currentMedia.url" target="_blank">
         <button
-          type="button"
-          class="btn btn-outline-primary"
-          style="font-size: 1.5rem"
+            type="button"
+            class="btn btn-outline-primary"
+            style="font-size: 1.5rem"
         >
           <i class="bi bi-box-arrow-up-right"></i>
         </button>
@@ -83,7 +84,13 @@
 </template>
 
 <script>
+import VueTitle from "./VueTitle";
+
 export default {
+  components: {
+    VueTitle
+  },
+
   emits: [
     "media-started",
     "media-playing",
@@ -96,17 +103,17 @@ export default {
   props: ["nextMediaProp", "mediaPlayingEventTiming", "remoteStatus"],
 
   watch: {
-    nextMediaProp: function(newVal) {
+    nextMediaProp: function (newVal) {
       this.nextMedia = newVal;
       this.playNextSong(false);
     },
-    remoteStatus: function(newStatus) {
+    remoteStatus: function (newStatus) {
       this.currentMedia = newStatus.currentMedia;
       this.nextMedia = newStatus.nextMedia;
 
       if (this.$refs.audio_player) {
         let remoteAudioDesync = Math.abs(
-          newStatus.elapsedTime - this.$refs.audio_player.currentTime
+            newStatus.elapsedTime - this.$refs.audio_player.currentTime
         );
 
         // Only synchronize if delay between host audio and listener audio is higher than 500 ms
@@ -150,7 +157,7 @@ export default {
     syncAudioAndVideo() {
       if (this.$refs.video_player) {
         let audioVideoDesync = Math.abs(
-          this.$refs.video_player.currentTime -
+            this.$refs.video_player.currentTime -
             this.$refs.audio_player.currentTime
         );
 
@@ -203,8 +210,8 @@ export default {
     },
     playNextSong(force = false) {
       if (
-        this.nextMedia != null &&
-        (force === true || this.mediaInProgress === false)
+          this.nextMedia != null &&
+          (force === true || this.mediaInProgress === false)
       ) {
         this.currentMedia = this.nextMedia;
         this.nextMedia = null;
@@ -241,8 +248,8 @@ export default {
   mounted() {
     if (this.mediaPlayingEventTiming > 0) {
       this.mediaPlayingInterval = setInterval(
-        this.mediaPlaying,
-        this.mediaPlayingEventTiming * 1000
+          this.mediaPlaying,
+          this.mediaPlayingEventTiming * 1000
       );
     }
   }
