@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
+
 import django_yamlconf
 from pathlib import Path
 from django.utils.log import DEFAULT_LOGGING
@@ -60,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middlewares.ExtendUserSession'
 ]
 
 ROOT_URLCONF = 'melting_potlist.urls'
@@ -172,6 +175,8 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/discord/login'
+
+SESSION_COOKIE_AGE = timedelta(weeks=3).total_seconds()
 
 # Send error logs trough emails (with overrideable default config)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
