@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from apps.discord_login.models import DiscordGuild
-from apps.user_profile.models import DynamicPlaylist, UserTrack, DynamicPlaylistUser
+from apps.user_profile.models import DynamicPlaylist, DynamicPlaylistUser
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -98,8 +98,8 @@ class PersistAndNext(APIView):
         if playlist_author != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if request.data["trackToPersist"]:
-            dynamic_playlist.persist_track(request.data["trackToPersist"])
+        if "trackId" in request.data and "userId" in request.data:
+            dynamic_playlist.persist_track_and_user(request.data["trackId"], request.data["userId"])
 
         for i in range(5):
             next_user_track: UserTrack = dynamic_playlist.find_next_track()
@@ -108,7 +108,8 @@ class PersistAndNext(APIView):
 
             next_track_url = UriParser(next_user_track.track_uri.uri).url
             if response_content := fetch_media(next_track_url):
-                response_content["id"] = next_user_track.id
+                response_content["track_id"] = next_user_track.track_uri.track.id
+                response_content["user_id"] = next_user_track.user_playlist.user.id
                 return Response(response_content)
             else:
                 next_user_track.track_uri.unavailable = True

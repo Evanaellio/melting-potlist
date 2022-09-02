@@ -75,12 +75,12 @@ export default {
         body: JSON.stringify({is_active: isActive})
       }).then(() => {
         if (this.currentMediaPersisted) {
-          this.persistPlayedSongAndFetchNext();
+          this.persistPlayedMediaAndFetchNext();
         }
       });
     },
-    persistPlayedSongAndFetchNext(playedSongId = null) {
-      if (playedSongId !== null) {
+    persistPlayedMediaAndFetchNext(playedMedia = null) {
+      if (playedMedia !== null) {
         this.currentMediaPersisted = true;
       }
       return fetch(
@@ -91,7 +91,7 @@ export default {
               "Content-Type": "application/json",
               "X-CSRFToken": this.csrfToken
             },
-            body: JSON.stringify({trackToPersist: playedSongId})
+            body: JSON.stringify({trackId: playedMedia?.track_id, userId: playedMedia?.user_id})
           }
       )
           .then(response => response.json())
@@ -101,7 +101,7 @@ export default {
     },
     onMediaPlaying(event) {
       if (event.elapsedTime > 30 && event.nextMedia === null) {
-        this.persistPlayedSongAndFetchNext(event.currentMedia.id);
+        this.persistPlayedMediaAndFetchNext(event.currentMedia);
       }
     },
     onMediaStarted() {
@@ -110,7 +110,7 @@ export default {
     onMediaPlayed(event) {
       // Should only happen when skipping or for medias less than or around 30 seconds in length
       if (event.nextMedia === null) {
-        this.persistPlayedSongAndFetchNext(event.currentMedia.id);
+        this.persistPlayedMediaAndFetchNext(event.currentMedia);
       }
     },
     sendWebsocketData(data) {
@@ -150,7 +150,7 @@ export default {
 
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-    this.persistPlayedSongAndFetchNext();
+    this.persistPlayedMediaAndFetchNext();
 
     this.websocket = new WebSocket(
         `${this.$window.context.websocketProtocol}://${window.location.host}/ws/dynamicplaylists/${this.playlistId}/`

@@ -170,8 +170,6 @@ def get_guilds_without_duplicate_users(guilds: List[DiscordGuild]):
 
 @login_required
 def create_dynamic_playlist(request):
-    print(request.POST)
-
     selected_guilds = request.POST.get('selectedGuilds').split(',')
     guilds = [get_object_or_404(DiscordGuild, id=guild_id) for guild_id in selected_guilds]
 

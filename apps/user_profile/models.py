@@ -60,7 +60,6 @@ class UserPlaylist(models.Model):
 class UserTrack(models.Model):
     track_uri = models.ForeignKey(TrackUri, on_delete=models.CASCADE, related_name='user_tracks')
     user_playlist = models.ForeignKey(UserPlaylist, on_delete=models.CASCADE, related_name='user_tracks')
-    listeners = models.ManyToManyField(User, through="UserTrackListenStats", related_name='listened_tracks')
     date_added = models.DateTimeField()
 
     class Meta:
@@ -69,15 +68,15 @@ class UserTrack(models.Model):
         ]
 
 
-class UserTrackListenStats(models.Model):
-    user_track = models.ForeignKey(UserTrack, on_delete=models.CASCADE, related_name='user_track_listen_stats')
-    listener = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_track_listen_stats')
+class TrackListenStats(models.Model):
+    track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name='track_listen_stats')
+    listener = models.ForeignKey(User, on_delete=models.CASCADE, related_name='track_listen_stats')
     date_last_listened = models.DateTimeField(default=timezone.now)
     listen_count = models.IntegerField(default=1)
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['user_track', 'listener'], name='unique_user_track_listener'),
+            UniqueConstraint(fields=['track', 'listener'], name='unique_track_listener'),
         ]
 
 
@@ -91,17 +90,8 @@ class UserSettings(models.Model):
                                              track_uri__unavailable=False))
 
 
-def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats], active_users_count,
+def compute_weight_from_track_stats(track_statistics: List[TrackListenStats], active_users_count,
                                     has_user_warmed_up) -> float:
-    # Merge all stats to aggregate a single listen count and date for each tuple (user, track_uri)
-    merged_stats = defaultdict(
-        lambda: {"date_last_listened": datetime.datetime.min.replace(tzinfo=pytz.UTC), "listen_count": 0})
-    for track_stat in track_statistics:
-        key = (track_stat.user_track.user_playlist.user.id, track_stat.user_track.track_uri.uri)
-        merged_stats[key]["listen_count"] += track_stat.listen_count
-        merged_stats[key]["date_last_listened"] = max(merged_stats[key]["date_last_listened"],
-                                                      track_stat.date_last_listened)
-
     now = django.utils.timezone.now()
     weight = 1.0
 
@@ -112,8 +102,8 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
 
     listened_recently_count = 0
 
-    for merged_stat in merged_stats.values():
-        delta = now - merged_stat["date_last_listened"]
+    for stat in track_statistics:
+        delta = now - stat.date_last_listened
         total_hours = delta.days * 24 + (delta.seconds / 3600)
 
         if delta.days >= 1:
@@ -126,23 +116,24 @@ def compute_weight_from_track_stats(track_statistics: List[UserTrackListenStats]
 
 class DynamicPlaylist(models.Model):
     date_generated = models.DateTimeField(default=timezone.now)
-    tracks = models.ManyToManyField(UserTrack, related_name='dynamic_playlists', through="DynamicPlaylistTrack")
+    tracks = models.ManyToManyField(Track, related_name='dynamic_playlists', through="DynamicPlaylistTrack")
     groups = models.ManyToManyField(DiscordGuild, related_name='dynamic_playlists')
     users = models.ManyToManyField(User, related_name='dynamic_playlists', through="DynamicPlaylistUser")
     title = models.TextField(default="Unnamed dynamic playlist")
     is_group_mode = models.BooleanField(default=True)
 
-    def persist_track(self, track_id_to_persist):
+    def persist_track_and_user(self, track_id, user_id):
         active_users = list(self.dynamic_playlist_users.filter(is_active=True))
 
-        persisted_track = UserTrack.objects.get(id=track_id_to_persist)
+        persisted_track = Track.objects.get(id=track_id)
+        persisted_user = User.objects.get(id=user_id)
 
         # Update (or create) listening stats for active users (only in group mode)
         if self.is_group_mode:
             for listening_user in active_users:
-                listen_stats, listen_stats_created = UserTrackListenStats.objects.get_or_create(
+                listen_stats, listen_stats_created = TrackListenStats.objects.get_or_create(
                     listener=listening_user.user,
-                    user_track=persisted_track
+                    track=persisted_track
                 )
 
                 if not listen_stats_created:
@@ -150,17 +141,17 @@ class DynamicPlaylist(models.Model):
                     listen_stats.date_last_listened = django.utils.timezone.now()
                     listen_stats.save()
 
-        # Save track to dynamic playlist's list of tracks
-        DynamicPlaylistTrack.objects.create(
-            dynamic_playlist=self,
-            track=persisted_track
-        )
+            # Save track to dynamic playlist's list of tracks (only in group mode)
+            DynamicPlaylistTrack.objects.create(
+                dynamic_playlist=self,
+                track=persisted_track,
+                user=persisted_user
+            )
 
         # Mark the user that provided the persisted track as played in current rotation
-        persisted_track_user: DynamicPlaylistUser = self.dynamic_playlist_users.get(
-            user=persisted_track.user_playlist.user)
-        persisted_track_user.played_in_rotation = True
-        persisted_track_user.save()
+        persisted_playlist_user: DynamicPlaylistUser = self.dynamic_playlist_users.get(user=persisted_user)
+        persisted_playlist_user.played_in_rotation = True
+        persisted_playlist_user.save()
 
     def find_next_track(self) -> Optional[UserTrack]:
         playlist_author = self.dynamic_playlist_users.get(is_author=True)
@@ -187,25 +178,24 @@ class DynamicPlaylist(models.Model):
                 if timezone.now() - enabled_playlist.last_synchronized > datetime.timedelta(hours=1):
                     enabled_playlist.synchronize()
 
-        all_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
-        all_track_uris = list(map(lambda track: track.track_uri.uri, all_tracks))
+        all_user_tracks: List[UserTrack] = chosen_user.user.settings.get_enabled_tracks()
+        all_tracks = list(map(lambda user_track: user_track.track_uri.track, all_user_tracks))
 
-        has_user_warmed_up = self.tracks.filter(user_playlist__user=chosen_user.user).exists()
+        has_user_warmed_up = self.dynamic_playlist_tracks.filter(user=chosen_user.user).exists()
 
         if self.is_group_mode:
             users_listening = list(map(lambda dyn_playlist_user: dyn_playlist_user.user, active_users))
         else:
-            users_listening = [playlist_author.user]
+            users_listening = []  # Tracking is disabled in solo mode for now
 
-        statistics = list(UserTrackListenStats.objects.filter(user_track__track_uri__uri__in=all_track_uris,
-                                                              listener__in=users_listening))
+        statistics = list(TrackListenStats.objects.filter(track__in=all_tracks, listener__in=users_listening))
 
         weights = []
-        for user_track_uri in all_track_uris:
-            filtered_stats = list(filter(lambda stat: stat.user_track.track_uri.uri == user_track_uri, statistics))
+        for track in all_tracks:
+            filtered_stats = list(filter(lambda stat: stat.track == track, statistics))
             weights.append(compute_weight_from_track_stats(filtered_stats, len(users_listening), has_user_warmed_up))
 
-        return random.choices(all_tracks, k=1, weights=weights)[0]
+        return random.choices(all_user_tracks, k=1, weights=weights)[0]
 
 
 class DynamicPlaylistUser(models.Model):
@@ -223,7 +213,8 @@ class DynamicPlaylistUser(models.Model):
 
 
 class DynamicPlaylistTrack(models.Model):
-    track = models.ForeignKey(UserTrack, on_delete=models.CASCADE)
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=True)
     dynamic_playlist = models.ForeignKey(DynamicPlaylist, on_delete=models.CASCADE,
                                          related_name='dynamic_playlist_tracks')
     played = models.DateTimeField(default=django.utils.timezone.now)
