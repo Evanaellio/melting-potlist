@@ -6,9 +6,16 @@ const VUE_DEV_PORT = process.env.VUE_DEV_PORT ?? '8080';
 module.exports = {
     publicPath: process.env.NODE_ENV === 'production' ? '/content' : `http://${DEV_HOST}:${VUE_DEV_PORT}`,
     runtimeCompiler: true,
-
+    devServer: {
+        host: DEV_HOST,
+        port: VUE_DEV_PORT,
+        allowedHosts: [DEV_HOST],
+        hotOnly: true,
+        watchOptions: {poll: 1000},
+        https: false,
+        headers: {"Access-Control-Allow-Origin": ["\*"]}
+    },
     chainWebpack: config => {
-
         config.optimization
             .splitChunks(false)
 
@@ -18,13 +25,5 @@ module.exports = {
 
         config.resolve.alias
             .set('__STATIC__', 'static')
-
-        config.devServer
-            .host(DEV_HOST)
-            .port(VUE_DEV_PORT)
-            .hotOnly(true)
-            .watchOptions({poll: 1000})
-            .https(false)
-            .headers({"Access-Control-Allow-Origin": ["\*"]})
-            }
-        };
+    }
+};
