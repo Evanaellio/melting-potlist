@@ -62,6 +62,7 @@
           class="btn btn-outline-primary"
           style="font-size: 1.5rem"
           v-on:click="toggleFullscreen"
+          v-if="!audioOnly"
       >
         <i class="bi bi-arrows-fullscreen"></i>
       </button>
