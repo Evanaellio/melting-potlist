@@ -20,6 +20,7 @@
       ref="mediaPlayer"
       :next-media-prop="nextMedia"
       :media-playing-event-timing="8"
+      :is-mobile="this.$window.context.isMobile"
       @media-playing="onMediaPlaying"
       @media-started="onMediaStarted"
       @media-played="onMediaPlayed"

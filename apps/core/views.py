@@ -194,6 +194,7 @@ def play_dynamic_playlist(request, playlist_id):
             'guilds': guilds,
             'playlistId': playlist.id,
             'websocketProtocol': 'ws' if settings.DEBUG else 'wss',
+            'isMobile': request.user_agent.is_mobile
         }),
         'title': f"🎵 {playlist.title}",
         'is_host': playlist.users.get(dynamicplaylistuser__is_author=True) == request.user

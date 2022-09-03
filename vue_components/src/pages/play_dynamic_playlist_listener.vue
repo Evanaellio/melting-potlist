@@ -3,10 +3,11 @@
     Resync with host
   </button>
   <MediaPlayer
-    :next-media-prop="nextMedia"
-    :media-playing-event-timing="0"
-    :remote-status="remoteStatus"
-    @initialPlaybackStarted="queryStatus"
+      :next-media-prop="nextMedia"
+      :media-playing-event-timing="0"
+      :is-mobile="this.$window.context.isMobile"
+      :remote-status="remoteStatus"
+      @initialPlaybackStarted="queryStatus"
   ></MediaPlayer>
 </template>
 

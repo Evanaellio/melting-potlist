@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'widget_tweaks',
     'webpack_loader',
+    'django_user_agents',
     'apps.core',
     'apps.discord_login',
     'apps.user_profile',
@@ -62,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
     'apps.core.middlewares.ExtendUserSession'
 ]
 
@@ -104,6 +106,14 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# https://docs.djangoproject.com/fr/2.2/topics/cache/
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    }
+}
+USER_AGENTS_CACHE = 'default'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

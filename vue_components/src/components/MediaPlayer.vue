@@ -100,7 +100,7 @@ export default {
     "play",
     "pause"
   ],
-  props: ["nextMediaProp", "mediaPlayingEventTiming", "remoteStatus"],
+  props: ["nextMediaProp", "mediaPlayingEventTiming", "isMobile", "remoteStatus"],
 
   watch: {
     nextMediaProp: function (newVal) {
@@ -252,7 +252,11 @@ export default {
           this.mediaPlayingEventTiming * 1000
       );
     }
-  }
+    if (this.isMobile) {
+      this.audioOnly = true;
+    }
+  },
+
 };
 </script>
 
