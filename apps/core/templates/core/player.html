@@ -1,9 +1,0 @@
-{% extends "core/navigation.html" %}
-
-{% block content %}
-    {% for playlist in playlists %}
-        <a href={{ playlist }}>
-            <h1>Playlist part {{ forloop.counter }} </h1>
-        </a>
-    {% endfor %}
-{% endblock %}

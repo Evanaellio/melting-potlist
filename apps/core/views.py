@@ -131,14 +131,6 @@ def groups(request):
     return render(request, 'core/groups.html', context)
 
 
-def player(request):
-    context = {
-        'playlists': request.GET.get('playlists').split(','),
-    }
-
-    return render(request, 'core/player.html', context)
-
-
 def subtitles(request):
     duration = datetime.timedelta(seconds=int(request.GET.get('duration')))
 
