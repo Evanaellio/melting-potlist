@@ -199,6 +199,10 @@ export default {
       if (this.$refs.video_player) {
         this.$refs.video_player.play();
       }
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: this.currentMedia.title,
+        artwork: [{src: this.currentMedia.thumbnail}]
+      });
     },
     onAudioPause() {
       this.$emit("pause", {

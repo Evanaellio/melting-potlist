@@ -54,7 +54,7 @@ def make_track(user_track: UserTrack):
         "artist": track_uri.track.artist if track_uri.track else "[DELETED]",
         "id": track_id,
         "url": uri_parser.url,
-        "thumbnail": uri_parser.thumbnail,
+        "thumbnail": uri_parser.thumbnail(),
         "duration": duration_to_str(track_uri.track.duration) if track_uri.track else "0:00",
         "date_added_natural": naturalday(user_track.date_added),
         "date_added": datetime.timestamp(user_track.date_added),

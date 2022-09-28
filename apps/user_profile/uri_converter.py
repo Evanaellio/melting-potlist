@@ -22,10 +22,8 @@ class UriParser:
         else:
             raise Exception(f"Unknown URI '{self.uri}' cannot convert")
 
-    @property
-    def thumbnail(self):
+    def thumbnail(self, high_quality=False):
         if self.website == 'youtube' and self.resource_type == 'video':
-            return f"https://i.ytimg.com/vi/{self.resource_id}/mqdefault.jpg"
-
+            return f"https://i.ytimg.com/vi/{self.resource_id}/{'hqdefault' if high_quality else 'mqdefault'}.jpg"
         else:
             raise Exception(f"Unknown URI '{self.uri}' cannot convert")

@@ -105,11 +105,11 @@ class PersistAndNext(APIView):
             next_user_track: UserTrack = dynamic_playlist.find_next_track()
             if not next_user_track:
                 raise BadRequest('No active user in playlist')
-
-            next_track_url = UriParser(next_user_track.track_uri.uri).url
-            if response_content := fetch_media(next_track_url):
+            uri_parser = UriParser(next_user_track.track_uri.uri)
+            if response_content := fetch_media(uri_parser.url):
                 response_content["track_id"] = next_user_track.track_uri.track.id
                 response_content["user_id"] = next_user_track.user_playlist.user.id
+                response_content["thumbnail"] = uri_parser.thumbnail(high_quality=True)
                 return Response(response_content)
             else:
                 next_user_track.track_uri.unavailable = True
