@@ -4,6 +4,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV NODE_ENV=production
 
+RUN apt-get update && apt-get -y install libpq-dev gcc build-essential
+
+# Install and configure Poetry
+RUN pip install "poetry==1.3.2"
+RUN poetry config virtualenvs.create false
+
 # Install NPM packages using PNPM
 RUN npm install -g pnpm
 RUN mkdir --parents /usr/src/app/vue_components
@@ -13,10 +19,8 @@ RUN pnpm install --prod
 
 # Install Python packages
 WORKDIR /usr/src/app
-COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install --upgrade pip wheel
-RUN apt-get update && apt-get -y install libpq-dev gcc build-essential
-RUN pip install -r requirements.txt
+COPY ./pyproject.toml ./poetry.lock ./
+RUN poetry install --only main --no-root --no-interaction --no-ansi
 
 COPY . /usr/src/app/
 
