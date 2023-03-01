@@ -1,6 +1,9 @@
 <template>
   <form :action="create_playlist_url" method="post">
     <div class="mb-3">
+      <p v-if="ready_guilds_count === 0" class="text-warning">
+        You're all alone in here, go and invite some friends to use Melting Potlist!
+      </p>
       <label class="form-label">My groups</label>
       <Multiselect
           v-model="user_guilds.selected"
@@ -10,27 +13,10 @@
           :option-height="60"
           placeholder=""
       ></Multiselect>
-      <!--        <div class="form-text">-->
-      <!--          Who will provide the good vibes ?-->
-      <!--        </div>-->
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Other groups</label>
-      <Multiselect
-          v-model="other_guilds.selected"
-          :options="other_guilds.all"
-          label="name"
-          track-by="id"
-          :option-height="60"
-          placeholder=""
-      ></Multiselect>
-      <!--        <div class="form-text">-->
-      <!--          Who will provide the good vibes ?-->
-      <!--        </div>-->
     </div>
     <input type="hidden" name="csrfmiddlewaretoken" :value="csrfToken">
     <input id="selectedGuilds" name="selectedGuilds" type="hidden" :value="selectedGuilds">
-    <div v-if="user_guilds.selected.length + other_guilds.selected.length > 0">
+    <div v-if="user_guilds.selected.length">
       <button type="submit" class="btn btn-primary">Continue with selected groups</button>
     </div>
   </form>
@@ -45,9 +31,7 @@ export default {
   },
   computed: {
     selectedGuilds() {
-      const selectedUserGuildsIds = this.user_guilds.selected.map(guild => guild.id);
-      const otherUserGuildsIds = this.other_guilds.selected.map(guild => guild.id);
-      return [...selectedUserGuildsIds, ...otherUserGuildsIds];
+      return this.user_guilds.selected.map(guild => guild.id);
     }
   },
   data() {
@@ -56,17 +40,14 @@ export default {
         all: [],
         selected: []
       },
-      other_guilds: {
-        all: [],
-        selected: []
-      },
+      ready_guilds_count: 0,
       create_playlist_url: null,
       csrfToken: null
     };
   },
   mounted() {
     this.user_guilds.all = this.$window.context.user_guilds;
-    this.other_guilds.all = this.$window.context.other_guilds;
+    this.ready_guilds_count = this.$window.context.ready_guilds_count;
     this.create_playlist_url = this.$window.context.create_playlist_url;
     this.csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
   }
