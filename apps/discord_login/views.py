@@ -8,12 +8,12 @@ from .oauth import make_session
 
 def login(request):
     oauth = make_session(request)
-    authorization_url, state = oauth.authorization_url('https://discordapp.com/api/oauth2/authorize')
+    authorization_url, state = oauth.authorization_url("https://discordapp.com/api/oauth2/authorize")
     return redirect(authorization_url)
 
 
 def callback(request):
-    if code := request.GET.get('code'):
+    if code := request.GET.get("code"):
         user = django.contrib.auth.authenticate(request, oauth_code=code)
         django.contrib.auth.login(request, user)
         return redirect(settings.LOGIN_REDIRECT_URL)

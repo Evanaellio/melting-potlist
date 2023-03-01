@@ -14,24 +14,28 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='DiscordGuild',
+            name="DiscordGuild",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('name', models.TextField()),
-                ('icon', models.TextField(blank=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("name", models.TextField()),
+                ("icon", models.TextField(blank=True)),
             ],
         ),
         migrations.CreateModel(
-            name='DiscordUser',
+            name="DiscordUser",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('avatar', models.TextField(blank=True)),
-                ('username', models.TextField()),
-                ('discriminator', models.TextField()),
-                ('locale', models.TextField()),
-                ('guilds', models.ManyToManyField(related_name='users', to='discord_login.DiscordGuild')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='discord',
-                                              to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("avatar", models.TextField(blank=True)),
+                ("username", models.TextField()),
+                ("discriminator", models.TextField()),
+                ("locale", models.TextField()),
+                ("guilds", models.ManyToManyField(related_name="users", to="discord_login.DiscordGuild")),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="discord", to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
         ),
     ]

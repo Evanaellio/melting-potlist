@@ -6,24 +6,24 @@ class UriParser:
 
     def __init__(self, uri):
         self.uri = uri
-        self.website, self.resource_type, self.resource_id = uri.split(':')
+        self.website, self.resource_type, self.resource_id = uri.split(":")
 
     @property
     def url(self):
-        if self.website == 'youtube' and self.resource_type == 'playlist':
+        if self.website == "youtube" and self.resource_type == "playlist":
             return f"https://www.youtube.com/playlist?list={self.resource_id}"
 
-        elif self.website == 'youtube' and self.resource_type == 'video':
+        elif self.website == "youtube" and self.resource_type == "video":
             return f"https://www.youtube.com/watch?v={self.resource_id}"
 
-        elif self.website == 'spotify':
+        elif self.website == "spotify":
             return f"https://open.spotify.com/{self.resource_type}/{self.resource_id}"
 
         else:
             raise Exception(f"Unknown URI '{self.uri}' cannot convert")
 
     def thumbnail(self, high_quality=False):
-        if self.website == 'youtube' and self.resource_type == 'video':
+        if self.website == "youtube" and self.resource_type == "video":
             return f"https://i.ytimg.com/vi/{self.resource_id}/{'hqdefault' if high_quality else 'mqdefault'}.jpg"
         else:
             raise Exception(f"Unknown URI '{self.uri}' cannot convert")

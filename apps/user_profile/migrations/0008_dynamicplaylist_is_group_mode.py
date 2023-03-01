@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0007_trackuri_unavailable'),
+        ("user_profile", "0007_trackuri_unavailable"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dynamicplaylist',
-            name='is_group_mode',
+            model_name="dynamicplaylist",
+            name="is_group_mode",
             field=models.BooleanField(default=True),
         ),
     ]

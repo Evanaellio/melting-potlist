@@ -42,11 +42,7 @@ def home(request):
             ).count()
 
             if deleted_or_unavailable_tracks_count:
-                track_pluralized = (
-                    "track is"
-                    if deleted_or_unavailable_tracks_count == 1
-                    else "tracks are"
-                )
+                track_pluralized = "track is" if deleted_or_unavailable_tracks_count == 1 else "tracks are"
                 alerts.append(
                     Alert(
                         message=f'''⚠ {deleted_or_unavailable_tracks_count} {track_pluralized} unavailable or deleted from your playlist: "{enabled_playlist.title}"''',
@@ -181,9 +177,7 @@ def get_guilds_without_duplicate_users(guilds: List[DiscordGuild]):
 @login_required
 def create_dynamic_playlist(request):
     selected_guilds = request.POST.get("selectedGuilds").split(",")
-    guilds = [
-        get_object_or_404(DiscordGuild, id=guild_id) for guild_id in selected_guilds
-    ]
+    guilds = [get_object_or_404(DiscordGuild, id=guild_id) for guild_id in selected_guilds]
 
     context = {
         "json_context": json.dumps(
@@ -213,8 +207,7 @@ def play_dynamic_playlist(request, playlist_id):
     for guild in guilds:
         for multiselect_user in guild["users"]:
             multiselect_user["inInitialSelection"] = (
-                multiselect_user["inInitialSelection"]
-                and multiselect_user["id"] in active_users
+                multiselect_user["inInitialSelection"] and multiselect_user["id"] in active_users
             )
 
     context = {
@@ -227,8 +220,7 @@ def play_dynamic_playlist(request, playlist_id):
             }
         ),
         "title": f"🎵 {playlist.title}",
-        "is_host": playlist.users.get(dynamicplaylistuser__is_author=True)
-        == request.user,
+        "is_host": playlist.users.get(dynamicplaylistuser__is_author=True) == request.user,
     }
 
     return render(request, "core/play_dynamic_playlist.html", context)

@@ -7,27 +7,35 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('user_profile', '0009_migrate_is_group_mode'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("user_profile", "0009_migrate_is_group_mode"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TrackListenStats',
+            name="TrackListenStats",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_last_listened', models.DateTimeField(default=django.utils.timezone.now)),
-                ('listen_count', models.IntegerField(default=1)),
-                ('listener',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='track_listen_stats',
-                                   to='auth.user')),
-                ('track',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='track_listen_stats',
-                                   to='user_profile.track')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("date_last_listened", models.DateTimeField(default=django.utils.timezone.now)),
+                ("listen_count", models.IntegerField(default=1)),
+                (
+                    "listener",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="track_listen_stats", to="auth.user"
+                    ),
+                ),
+                (
+                    "track",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="track_listen_stats",
+                        to="user_profile.track",
+                    ),
+                ),
             ],
         ),
         migrations.AddConstraint(
-            model_name='tracklistenstats',
-            constraint=models.UniqueConstraint(fields=('track', 'listener'), name='unique_track_listener'),
+            model_name="tracklistenstats",
+            constraint=models.UniqueConstraint(fields=("track", "listener"), name="unique_track_listener"),
         ),
     ]

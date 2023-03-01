@@ -4,28 +4,30 @@ from django.db import migrations
 
 
 def migrate_track_listen_stats(apps, schema_editor):
-    UserTrackListenStats = apps.get_model('user_profile', 'UserTrackListenStats')
-    TrackListenStats = apps.get_model('user_profile', 'TrackListenStats')
+    UserTrackListenStats = apps.get_model("user_profile", "UserTrackListenStats")
+    TrackListenStats = apps.get_model("user_profile", "TrackListenStats")
 
     for user_track_listen_stats in UserTrackListenStats.objects.all():
         track = user_track_listen_stats.user_track.track_uri.track
-        track_listen_stats, created = TrackListenStats.objects.get_or_create(track=track,
-                                                                             listener=user_track_listen_stats.listener)
+        track_listen_stats, created = TrackListenStats.objects.get_or_create(
+            track=track, listener=user_track_listen_stats.listener
+        )
 
         if created:
             track_listen_stats.listen_count = user_track_listen_stats.listen_count
             track_listen_stats.date_last_listened = user_track_listen_stats.date_last_listened
         else:
             track_listen_stats.listen_count += user_track_listen_stats.listen_count
-            track_listen_stats.date_last_listened = max(track_listen_stats.date_last_listened,
-                                                        user_track_listen_stats.date_last_listened)
+            track_listen_stats.date_last_listened = max(
+                track_listen_stats.date_last_listened, user_track_listen_stats.date_last_listened
+            )
 
         track_listen_stats.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0010_add_tracklistenstats'),
+        ("user_profile", "0010_add_tracklistenstats"),
     ]
 
     operations = [

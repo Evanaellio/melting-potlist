@@ -10,18 +10,24 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
+        ("auth", "0011_update_proxy_permissions"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserSettings',
+            name="UserSettings",
             fields=[
-                ('user',
-                 annoying.fields.AutoOneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True,
-                                                   related_name='settings', serialize=False,
-                                                   to=settings.AUTH_USER_MODEL)),
-                ('core_playlist_url', models.URLField(blank=True)),
+                (
+                    "user",
+                    annoying.fields.AutoOneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        related_name="settings",
+                        serialize=False,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("core_playlist_url", models.URLField(blank=True)),
             ],
         ),
     ]

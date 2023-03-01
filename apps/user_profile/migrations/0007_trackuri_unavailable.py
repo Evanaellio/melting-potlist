@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0006_add_dynamic_playlists_and_track_stats'),
+        ("user_profile", "0006_add_dynamic_playlists_and_track_stats"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='trackuri',
-            name='unavailable',
+            model_name="trackuri",
+            name="unavailable",
             field=models.BooleanField(default=False),
         ),
     ]

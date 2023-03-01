@@ -5,12 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0003_migrate_previous_playlist'),
+        ("user_profile", "0003_migrate_previous_playlist"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='usersettings',
-            name='core_playlist_url',
+            model_name="usersettings",
+            name="core_playlist_url",
         ),
     ]

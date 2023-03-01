@@ -6,15 +6,15 @@ from django.db import migrations
 
 
 def migrate_previous_playlist(apps, schema_editor):
-    UserSettings = apps.get_model('user_profile', 'UserSettings')
-    UserPlaylist = apps.get_model('user_profile', 'UserPlaylist')
+    UserSettings = apps.get_model("user_profile", "UserSettings")
+    UserPlaylist = apps.get_model("user_profile", "UserPlaylist")
 
     for settings in UserSettings.objects.all():
         if settings.core_playlist_url:
             parsed_url = urlparse(settings.core_playlist_url)
             parsed_query = parse_qs(parsed_url.query)
 
-            if 'youtube.com' in parsed_url.netloc and 'list' in parsed_query:
+            if "youtube.com" in parsed_url.netloc and "list" in parsed_query:
                 uri = f'youtube:playlist:{parsed_query["list"][0]}'
                 UserPlaylist.objects.get_or_create(uri=uri, user=settings.user)
 
@@ -22,7 +22,7 @@ def migrate_previous_playlist(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('user_profile', '0002_add_playlists_and_tracks'),
+        ("user_profile", "0002_add_playlists_and_tracks"),
     ]
 
     operations = [

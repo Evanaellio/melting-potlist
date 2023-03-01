@@ -6,21 +6,21 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('user_profile', '0012_alter_dynamicplaylist_tracks_and_more'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("user_profile", "0012_alter_dynamicplaylist_tracks_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='usertrack',
-            name='listeners',
+            model_name="usertrack",
+            name="listeners",
         ),
         migrations.AddField(
-            model_name='dynamicplaylisttrack',
-            name='user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='auth.user'),
+            model_name="dynamicplaylisttrack",
+            name="user",
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="auth.user"),
         ),
         migrations.DeleteModel(
-            name='UserTrackListenStats',
+            name="UserTrackListenStats",
         ),
     ]

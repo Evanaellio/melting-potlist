@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def migrate_is_group_mode(apps, schema_editor):
-    DynamicPlaylist = apps.get_model('user_profile', 'DynamicPlaylist')
+    DynamicPlaylist = apps.get_model("user_profile", "DynamicPlaylist")
 
     for dynamic_playlist in DynamicPlaylist.objects.all():
         dynamic_playlist.is_group_mode = dynamic_playlist.groups.exists()
@@ -13,7 +13,7 @@ def migrate_is_group_mode(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('user_profile', '0008_dynamicplaylist_is_group_mode'),
+        ("user_profile", "0008_dynamicplaylist_is_group_mode"),
     ]
 
     operations = [

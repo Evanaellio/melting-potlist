@@ -19,27 +19,27 @@ from .uri_converter import UriParser
 def duration_to_str(duration: DurationField):
     days, hours, minutes, seconds, microseconds = _get_duration_components(duration)
 
-    return '{:02d}:{:02d}'.format(minutes, seconds)
+    return "{:02d}:{:02d}".format(minutes, seconds)
 
 
 def make_playlist(user_playlist: UserPlaylist):
     valid_tracks = user_playlist.user_tracks.filter(track_uri__deleted=False)
-    last_3_tracks: List[UserTrack] = list(valid_tracks.order_by('-date_added')[:3])
+    last_3_tracks: List[UserTrack] = list(valid_tracks.order_by("-date_added")[:3])
 
     return {
-        'id': user_playlist.id,
-        'title': user_playlist.title,
-        'enabled': user_playlist.enabled,
-        'url': UriParser(user_playlist.uri).url,
-        'last_synchronized': naturaltime(user_playlist.last_synchronized),
-        'last_track_added': naturaltime(last_3_tracks[0].date_added) if last_3_tracks else None,
-        'recent_tracks': map(make_track, last_3_tracks)
+        "id": user_playlist.id,
+        "title": user_playlist.title,
+        "enabled": user_playlist.enabled,
+        "url": UriParser(user_playlist.uri).url,
+        "last_synchronized": naturaltime(user_playlist.last_synchronized),
+        "last_track_added": naturaltime(last_3_tracks[0].date_added) if last_3_tracks else None,
+        "recent_tracks": map(make_track, last_3_tracks),
     }
 
 
 def make_track(user_track: UserTrack):
     track_uri = user_track.track_uri
-    track_id = track_uri.uri.split(':')[2]
+    track_id = track_uri.uri.split(":")[2]
     uri_parser = UriParser(track_uri.uri)
 
     if track_uri.deleted:
@@ -65,14 +65,13 @@ def make_track(user_track: UserTrack):
 @login_required
 def all_playlists(request):
     if request.POST:
-
-        playlist_url = request.POST['playlistUrl']
+        playlist_url = request.POST["playlistUrl"]
         parsed_url = urlparse(playlist_url)
         parsed_query = parse_qs(parsed_url.query)
 
         uri = None
 
-        if 'youtube.com' in parsed_url.netloc and 'list' in parsed_query:
+        if "youtube.com" in parsed_url.netloc and "list" in parsed_query:
             uri = f'youtube:playlist:{parsed_query["list"][0]}'
 
         if uri:
@@ -82,13 +81,11 @@ def all_playlists(request):
 
         user_playlist.synchronize()
 
-        return redirect(reverse('user_profile:single_playlist', kwargs={'playlist_id': user_playlist.id}))
+        return redirect(reverse("user_profile:single_playlist", kwargs={"playlist_id": user_playlist.id}))
 
-    context = {
-        'playlists': map(make_playlist, request.user.playlists.order_by("title"))
-    }
+    context = {"playlists": map(make_playlist, request.user.playlists.order_by("title"))}
 
-    return render(request, 'user_profile/playlists.html', context=context)
+    return render(request, "user_profile/playlists.html", context=context)
 
 
 @login_required
@@ -96,7 +93,7 @@ def delete_playlist(request, playlist_id):
     if request.POST:
         UserPlaylist.objects.get(user=request.user, id=playlist_id).delete()
 
-    return redirect(reverse('user_profile:all_playlists'))
+    return redirect(reverse("user_profile:all_playlists"))
 
 
 @login_required
@@ -113,17 +110,17 @@ def single_playlist(request, playlist_id):
     tracks = list(map(make_track, playlist.user_tracks.all()))
 
     context = {
-        'playlist_id': playlist_id,
-        'url': UriParser(playlist.uri).url,
-        'videos': tracks,
-        'title': playlist.title,
-        'tracks_json': json.dumps(tracks),
-        'track_count': valid_tracks.count(),
-        'deleted_track_count': deleted_tracks.count(),
-        'unavailable_track_count': unavailable_tracks.count(),
+        "playlist_id": playlist_id,
+        "url": UriParser(playlist.uri).url,
+        "videos": tracks,
+        "title": playlist.title,
+        "tracks_json": json.dumps(tracks),
+        "track_count": valid_tracks.count(),
+        "deleted_track_count": deleted_tracks.count(),
+        "unavailable_track_count": unavailable_tracks.count(),
     }
 
-    return render(request, 'user_profile/single_playlist.html', context=context)
+    return render(request, "user_profile/single_playlist.html", context=context)
 
 
 @login_required
@@ -135,7 +132,7 @@ def synchronize_playlist(request, playlist_id):
 
     playlist.synchronize()
 
-    return redirect(reverse('user_profile:all_playlists'))
+    return redirect(reverse("user_profile:all_playlists"))
 
 
 @login_required
@@ -148,4 +145,4 @@ def toggle_playlist(request, playlist_id):
     playlist.enabled = not playlist.enabled
     playlist.save()
 
-    return redirect(reverse('user_profile:all_playlists'))
+    return redirect(reverse("user_profile:all_playlists"))

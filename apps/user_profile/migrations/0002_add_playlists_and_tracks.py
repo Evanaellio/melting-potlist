@@ -9,70 +9,91 @@ import django.utils.timezone
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('user_profile', '0001_initial'),
+        ("user_profile", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Track',
+            name="Track",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.TextField()),
-                ('artist', models.TextField(blank=True)),
-                ('album', models.TextField(blank=True)),
-                ('duration', models.DurationField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("title", models.TextField()),
+                ("artist", models.TextField(blank=True)),
+                ("album", models.TextField(blank=True)),
+                ("duration", models.DurationField()),
             ],
         ),
         migrations.CreateModel(
-            name='TrackUri',
+            name="TrackUri",
             fields=[
-                ('uri', models.TextField(primary_key=True, serialize=False)),
-                ('deleted', models.BooleanField(default=False)),
-                ('track', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='uris',
-                                            to='user_profile.track')),
+                ("uri", models.TextField(primary_key=True, serialize=False)),
+                ("deleted", models.BooleanField(default=False)),
+                (
+                    "track",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="uris",
+                        to="user_profile.track",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserPlaylist',
+            name="UserPlaylist",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uri', models.TextField()),
-                ('title', models.TextField(default='Unknown playlist')),
-                ('enabled', models.BooleanField(default=True)),
-                ('last_synchronized', models.DateTimeField(default=django.utils.timezone.now)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("uri", models.TextField()),
+                ("title", models.TextField(default="Unknown playlist")),
+                ("enabled", models.BooleanField(default=True)),
+                ("last_synchronized", models.DateTimeField(default=django.utils.timezone.now)),
             ],
         ),
         migrations.CreateModel(
-            name='UserTrack',
+            name="UserTrack",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_added', models.DateTimeField()),
-                ('track_uri', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_tracks',
-                                                to='user_profile.trackuri')),
-                ('user_playlist',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_tracks',
-                                   to='user_profile.userplaylist')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("date_added", models.DateTimeField()),
+                (
+                    "track_uri",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_tracks",
+                        to="user_profile.trackuri",
+                    ),
+                ),
+                (
+                    "user_playlist",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_tracks",
+                        to="user_profile.userplaylist",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='userplaylist',
-            name='tracks',
-            field=models.ManyToManyField(related_name='user_playlists', through='user_profile.UserTrack',
-                                         to='user_profile.TrackUri'),
+            model_name="userplaylist",
+            name="tracks",
+            field=models.ManyToManyField(
+                related_name="user_playlists", through="user_profile.UserTrack", to="user_profile.TrackUri"
+            ),
         ),
         migrations.AddField(
-            model_name='userplaylist',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='playlists',
-                                    to=settings.AUTH_USER_MODEL),
+            model_name="userplaylist",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="playlists", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddConstraint(
-            model_name='usertrack',
-            constraint=models.UniqueConstraint(fields=('track_uri', 'user_playlist'),
-                                               name='unique_track_uri_user_playlist'),
+            model_name="usertrack",
+            constraint=models.UniqueConstraint(
+                fields=("track_uri", "user_playlist"), name="unique_track_uri_user_playlist"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='userplaylist',
-            constraint=models.UniqueConstraint(fields=('user', 'uri'), name='unique_user_uri'),
+            model_name="userplaylist",
+            constraint=models.UniqueConstraint(fields=("user", "uri"), name="unique_user_uri"),
         ),
     ]

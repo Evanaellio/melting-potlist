@@ -7,12 +7,12 @@ def user(request: HttpRequest):
     context = {}
 
     if request.user.is_authenticated:
-        context['user'] = make_user(request.user.discord)
+        context["user"] = make_user(request.user.discord)
 
     return context
 
 
 def settings_processor(request: HttpRequest):
     return {
-        'VERSION': settings.VERSION,
+        "VERSION": settings.VERSION,
     }

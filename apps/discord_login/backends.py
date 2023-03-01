@@ -11,13 +11,13 @@ class DiscordBackend(BaseBackend):
         oauth = make_session(request)
 
         oauth.fetch_token(
-            token_url='https://discordapp.com/api/oauth2/token',
+            token_url="https://discordapp.com/api/oauth2/token",
             code=oauth_code,
-            client_secret=settings.DISCORD_CLIENT_SECRET
+            client_secret=settings.DISCORD_CLIENT_SECRET,
         )
 
-        json_user = oauth.get('https://discordapp.com/api/users/@me').json()
-        json_guilds = oauth.get('https://discordapp.com/api/users/@me/guilds').json()
+        json_user = oauth.get("https://discordapp.com/api/users/@me").json()
+        json_guilds = oauth.get("https://discordapp.com/api/users/@me/guilds").json()
 
         user = self.create_or_update_user(json_user=json_user)
         guilds = [self.create_or_update_guild(json_guild=json_guild) for json_guild in json_guilds]
@@ -27,7 +27,6 @@ class DiscordBackend(BaseBackend):
         return user
 
     def create_or_update_user(self, json_user) -> User:
-
         discord_id = json_user["id"]
 
         try:
@@ -36,11 +35,11 @@ class DiscordBackend(BaseBackend):
             user = User()
             user.discord = DiscordUser(id=discord_id)
 
-        user.discord.avatar = json_user['avatar'] or ''
-        user.discord.locale = json_user['locale']
-        user.discord.username = json_user['username']
-        user.discord.discriminator = json_user['discriminator']
-        user.username = f'{user.discord.username}#{user.discord.discriminator}'
+        user.discord.avatar = json_user["avatar"] or ""
+        user.discord.locale = json_user["locale"]
+        user.discord.username = json_user["username"]
+        user.discord.discriminator = json_user["discriminator"]
+        user.username = f"{user.discord.username}#{user.discord.discriminator}"
 
         user.save()
         user.discord.save()
@@ -48,7 +47,6 @@ class DiscordBackend(BaseBackend):
         return user
 
     def create_or_update_guild(self, json_guild) -> DiscordGuild:
-
         guild_id = json_guild["id"]
 
         try:
@@ -57,7 +55,7 @@ class DiscordBackend(BaseBackend):
             guild = DiscordGuild(id=guild_id)
 
         guild.name = json_guild["name"]
-        guild.icon = json_guild["icon"] or ''
+        guild.icon = json_guild["icon"] or ""
         guild.save()
 
         return guild
@@ -82,7 +80,7 @@ def get_debug_mock_discord_user():
     mock_user.discord.avatar = ""
     mock_user.discord.username = "Mock User"
     mock_user.discord.discriminator = "0000"
-    mock_user.username = f'{mock_user.discord.username}#{mock_user.discord.discriminator}'
+    mock_user.username = f"{mock_user.discord.username}#{mock_user.discord.discriminator}"
 
     mock_user.save()
     mock_user.discord.save()
