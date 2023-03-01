@@ -6,24 +6,24 @@ from django.contrib.auth.models import User
 from django.core.exceptions import BadRequest
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from rest_framework import viewsets, permissions, parsers, status
+from rest_framework import parsers, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.api.serializers import DynamicPlaylistSerializer
-from apps.user_profile.models import DynamicPlaylist, UserTrack, DynamicPlaylistUser
+from apps.user_profile.models import DynamicPlaylist, DynamicPlaylistUser, UserTrack
 from apps.user_profile.uri_converter import UriParser
 
 YTDL_OPTS = {
-    'ignoreerrors': True,
-    'quiet': True,
+    "ignoreerrors": True,
+    "quiet": True,
 }
 
 logger = logging.getLogger(__name__)
 
 
 def is_valid_video_format(song_format):
-    if 'vbr' not in song_format:
+    if "vbr" not in song_format:
         return False
 
     try:
@@ -39,30 +39,30 @@ def fetch_media(media_url):
     if not media:
         return None
 
-    duration = int(media['duration'])
-    title = media['title']
-    artist = media['uploader']
+    duration = int(media["duration"])
+    title = media["title"]
+    artist = media["channel"]
 
-    song_formats = list(media['formats'])
+    song_formats = list(media["formats"])
 
-    audio_formats = filter(lambda fmt: 'abr' in fmt, song_formats)
+    audio_formats = filter(lambda fmt: "abr" in fmt, song_formats)
 
     # Get best audio format (most audio bitrate)
-    audio = max(audio_formats, key=lambda fmt: fmt['abr'])
+    audio = max(audio_formats, key=lambda fmt: fmt["abr"])
 
     video_formats = list(filter(is_valid_video_format, song_formats))
 
     # Get video closest to 1080p
-    video = min(video_formats, key=lambda fmt: abs(fmt['width'] - 1080))
+    video = min(video_formats, key=lambda fmt: abs(fmt["width"] - 1080))
 
     return {
-        'audio': audio['url'] if 'manifest_url' not in audio else audio['fragment_base_url'],
-        'video': video['url'] if 'manifest_url' not in video else video['fragment_base_url'],
-        'title': title,
-        'artist': artist,
-        'duration': duration,
-        'url': media_url,
-        'subtitles_url': f"{reverse('core:subtitles')}?title={quote(title)}&duration={duration}"
+        "audio": audio["url"] if "manifest_url" not in audio else audio["fragment_base_url"],
+        "video": video["url"] if "manifest_url" not in video else video["fragment_base_url"],
+        "title": title,
+        "artist": artist,
+        "duration": duration,
+        "url": media_url,
+        "subtitles_url": f"{reverse('core:subtitles')}?title={quote(title)}&duration={duration}",
     }
 
 
@@ -79,17 +79,16 @@ class DynamicPlaylistUsers(APIView):
 
         user_to_update, user_created = DynamicPlaylistUser.objects.get_or_create(
             dynamic_playlist=dynamic_playlist,
-            user=User.objects.get(discord__id=user_id)
+            user=User.objects.get(discord__id=user_id),
         )
 
-        user_to_update.is_active = request.data['is_active']
+        user_to_update.is_active = request.data["is_active"]
         user_to_update.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PersistAndNext(APIView):
-
     def post(self, request, playlist_id, format=None):
         dynamic_playlist = get_object_or_404(DynamicPlaylist, id=playlist_id)
 
@@ -104,7 +103,7 @@ class PersistAndNext(APIView):
         for i in range(5):
             next_user_track: UserTrack = dynamic_playlist.find_next_track()
             if not next_user_track:
-                raise BadRequest('No active user in playlist')
+                raise BadRequest("No active user in playlist")
             uri_parser = UriParser(next_user_track.track_uri.uri)
             if response_content := fetch_media(uri_parser.url):
                 response_content["track_id"] = next_user_track.track_uri.track.id
@@ -114,14 +113,15 @@ class PersistAndNext(APIView):
             else:
                 next_user_track.track_uri.unavailable = True
                 next_user_track.track_uri.save()
-                logger.warning("Tagged TrackUri '%s' as unavailable because it couldn't be fetched",
-                               next_user_track.track_uri.uri)
+                logger.warning(
+                    "Tagged TrackUri '%s' as unavailable because it couldn't be fetched",
+                    next_user_track.track_uri.uri,
+                )
 
         raise Exception("Couldn't fetch any valid user track after 5 tries")
 
 
 class Media(APIView):
-
     def get(self, request, media_uri, format=None):
         media_url = UriParser(media_uri).url
         response_content = fetch_media(media_url)
@@ -136,6 +136,7 @@ class DynamicPlaylistViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows dynamic playlists to be created or viewed
     """
+
     queryset = DynamicPlaylist.objects.all()
     serializer_class = DynamicPlaylistSerializer
     permission_classes = [permissions.IsAuthenticated]
