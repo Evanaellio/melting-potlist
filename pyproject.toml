@@ -9,7 +9,7 @@ packages = [{ include = "melting_potlist" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "^4.1.7"
+django = "~4.1.7"
 django-annoying = "^0.10.6"
 djangorestframework = "^3.14.0"
 django-yamlconf = "^1.4.0"
