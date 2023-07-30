@@ -1,3 +1,4 @@
+import json
 import logging
 from urllib.parse import quote
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_valid_video_format(song_format):
-    if "vbr" not in song_format:
+    if not song_format.get("fps", None):
         return False
 
     try:
@@ -45,10 +46,10 @@ def fetch_media(media_url):
 
     song_formats = list(media["formats"])
 
-    audio_formats = filter(lambda fmt: "abr" in fmt, song_formats)
+    audio_formats = list(filter(lambda fmt: fmt.get("audio_channels", None) and not fmt.get("fps", None), song_formats))
 
-    # Get best audio format (most audio bitrate)
-    audio = max(audio_formats, key=lambda fmt: fmt["abr"])
+    # Get best audio format (largest filesize)
+    audio = max(audio_formats, key=lambda fmt: fmt["filesize"])
 
     video_formats = list(filter(is_valid_video_format, song_formats))
 
