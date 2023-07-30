@@ -44,6 +44,7 @@
         v-on:pause="onAudioPause"
         v-on:seeked="onMediaSeeked"
         v-on:ended="onMediaEnded"
+        v-on:volumechange="onVolumeChange"
     ></audio>
 
     <div id="buttons" v-show="initialPlaybackStarted">
@@ -192,6 +193,12 @@ export default {
 
       this.playNextSong(false);
     },
+    onVolumeChange(event) {
+      // Only store new volume if change is triggered by user
+      if (event.isTrusted) {
+        localStorage.setItem("volume", this.$refs.audio_player.volume.toString());
+      }
+    },
     onAudioPlay() {
       this.$emit("play", {
         currentTime: this.$refs.audio_player.currentTime
@@ -243,6 +250,10 @@ export default {
       };
     },
     startInitialPlayback() {
+      let localVolume = localStorage.getItem("volume");
+      if (localVolume !== null) {
+        this.$refs.audio_player.volume = parseFloat(localVolume);
+      }
       console.log("Start initial playback", this.$refs.audio_player.paused);
       this.$refs.audio_player.play();
       console.log("Start initial playback", this.$refs.audio_player.paused);
@@ -261,7 +272,6 @@ export default {
       this.audioOnly = true;
     }
   },
-
 };
 </script>
 
