@@ -39,7 +39,12 @@ class DiscordBackend(BaseBackend):
         user.discord.locale = json_user["locale"]
         user.discord.username = json_user["username"]
         user.discord.discriminator = json_user["discriminator"]
-        user.username = f"{user.discord.username}#{user.discord.discriminator}"
+
+        # Legacy Discord usernames have a discriminator greater than 0
+        if user.discord.discriminator != "0":
+            user.username = f"{user.discord.username}#{user.discord.discriminator}"
+        else:
+            user.username = user.discord.username
 
         user.save()
         user.discord.save()
