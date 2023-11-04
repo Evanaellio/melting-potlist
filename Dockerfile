@@ -1,8 +1,9 @@
-FROM nikolaik/python-nodejs:python3.9-nodejs14
+FROM nikolaik/python-nodejs:python3.11-nodejs20
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--openssl-legacy-provider
 
 RUN apt-get update && apt-get -y install libpq-dev gcc build-essential
 
@@ -12,8 +13,8 @@ RUN poetry config virtualenvs.create false
 
 # Install NPM packages using PNPM
 RUN npm install -g pnpm
-RUN mkdir --parents /usr/src/app/vue_components
 WORKDIR /usr/src/app/vue_components
+# RUN mkdir --parents /usr/src/app/vue_components
 COPY ["./vue_components/package.json", "./vue_components/pnpm-lock.yaml",  "./"]
 RUN pnpm install --prod
 
