@@ -4,6 +4,8 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV NODE_ENV=production
 
+# Fix Yarnpkg pub keys and install OS packages
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN apt-get update && apt-get -y install libpq-dev gcc build-essential
 
 # Install and configure Poetry
