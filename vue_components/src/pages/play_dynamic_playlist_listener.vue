@@ -72,6 +72,13 @@ export default {
       console.log(this.websocket);
       console.error("Websocket closed unexpectedly");
     });
+
+    window.addEventListener("keypress", e => {
+      console.log(e.code)
+      if (e.code === "KeyR") {
+        this.queryStatus();
+      }
+    });
   }
 };
 </script>

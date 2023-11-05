@@ -108,6 +108,18 @@ export default {
     sendWebsocketData(data) {
       this.websocket.send(JSON.stringify(data));
     },
+    selectUser(username) {
+      for (const guild of this.guilds) {
+        for (const user of guild.users.all) {
+          if (user.name === username) {
+            if (!guild.users.selected.includes(user)) {
+              guild.users.selected.push(user);
+              this.onSelectUser(user);
+            }
+          }
+        }
+      }
+    },
     onWebsocketMessage(event) {
       console.log("Message from " + this.websocket, event);
 
@@ -115,6 +127,8 @@ export default {
 
       if (data.action === "query_status" && data.from) {
         this.updateStatus(data.from);
+      } else if (data.action == "connect") {
+        this.selectUser(data.username);
       }
     },
     updateStatus(toUser = undefined) {
