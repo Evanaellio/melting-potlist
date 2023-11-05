@@ -84,7 +84,7 @@ def make_guild(guild: DiscordGuild, include_users: bool = False):
 def make_user(discord_user: DiscordUser):
     return {
         "id": str(discord_user.id),
-        "name": discord_user.username,
+        "name": discord_user.user.username,
         "image": discord_user.image,
         "image_16": discord_user.image + "?size=16",
         "image_32": discord_user.image + "?size=32",

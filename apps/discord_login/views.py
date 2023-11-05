@@ -1,8 +1,9 @@
 import django.contrib.auth
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import redirect
 
-from .backends import get_debug_mock_discord_user
 from .oauth import make_session
 
 
@@ -17,9 +18,6 @@ def callback(request):
         user = django.contrib.auth.authenticate(request, oauth_code=code)
         django.contrib.auth.login(request, user)
         return redirect(settings.LOGIN_REDIRECT_URL)
-    elif settings.DEBUG and settings.DEBUG_DISCORD_LOGIN_MOCK:
-        django.contrib.auth.login(request, get_debug_mock_discord_user())
-        return redirect(settings.LOGIN_REDIRECT_URL)
     else:
         return redirect(settings.LOGOUT_REDIRECT_URL)
 
@@ -27,3 +25,12 @@ def callback(request):
 def logout(request):
     django.contrib.auth.logout(request)
     return redirect(settings.LOGOUT_REDIRECT_URL)
+
+
+def fake_login(request, user_id: int):
+    if settings.DEBUG and settings.ENABLE_FAKE_LOGIN:
+        user = User.objects.get(id=user_id)
+        django.contrib.auth.login(request, user)
+        return redirect(settings.LOGIN_REDIRECT_URL)
+    else:
+        return HttpResponse("Forbidden", status=403)
