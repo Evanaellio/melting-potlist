@@ -1,7 +1,13 @@
 <template>
-  <button class="btn btn-primary btn-lg" v-on:click="queryStatus">
-    Resync with host
-  </button>
+  <p><span v-for="(user, index) in remoteSelectedUsers" v-bind:key="index" class="multiselect__tag">
+    <img class="option__image"
+         :src="user.image_16"
+         height="16" width="16"
+         :data-default-image="user.default_image"
+         onerror="this.src = this.dataset.defaultImage">
+    <span>{{ user.name }}</span>
+  </span></p>
+
   <MediaPlayer
       :next-media-prop="nextMedia"
       :media-playing-event-timing="0"
@@ -24,12 +30,13 @@ export default {
       csrfToken: null,
       nextMedia: null,
       websocket: null,
-      remoteStatus: null
+      remoteStatus: null,
+      remoteSelectedUsers: null
     };
   },
   methods: {
     queryStatus() {
-      this.sendWebsocketData({ action: "query_status" });
+      this.sendWebsocketData({action: "query_status"});
     },
     sendWebsocketData(data) {
       this.websocket.send(JSON.stringify(data));
@@ -39,6 +46,7 @@ export default {
 
       if (data.action === "update_status") {
         this.remoteStatus = data.status;
+        this.remoteSelectedUsers = data.selectedUsers;
       }
     }
   },
@@ -63,6 +71,13 @@ export default {
     this.websocket.addEventListener("close", () => {
       console.log(this.websocket);
       console.error("Websocket closed unexpectedly");
+    });
+
+    window.addEventListener("keypress", e => {
+      console.log(e.code)
+      if (e.code === "KeyR") {
+        this.queryStatus();
+      }
     });
   }
 };

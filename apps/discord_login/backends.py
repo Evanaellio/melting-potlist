@@ -70,26 +70,3 @@ class DiscordBackend(BaseBackend):
             return User.objects.get(id=user_id)
         except User.DoesNotExist:
             return None
-
-
-# Get mock user (only used when setting DEBUG_DISCORD_LOGIN_MOCK is set to True)
-def get_debug_mock_discord_user():
-    discord_id = 0
-
-    try:
-        mock_user = DiscordUser.objects.get(id=discord_id).user
-    except DiscordUser.DoesNotExist:
-        mock_user = User()
-        mock_user.discord = DiscordUser(id=discord_id)
-
-    mock_user.discord.avatar = ""
-    mock_user.discord.username = "Mock User"
-    mock_user.discord.discriminator = "0000"
-    mock_user.username = f"{mock_user.discord.username}#{mock_user.discord.discriminator}"
-
-    mock_user.save()
-    mock_user.discord.save()
-
-    mock_user.discord.guilds.set(DiscordGuild.objects.all())
-
-    return mock_user

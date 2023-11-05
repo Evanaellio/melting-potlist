@@ -7,4 +7,5 @@ urlpatterns = [
     path("login/", views.login, name="login"),
     path("login/callback", views.callback, name="callback"),
     path("logout/", views.logout, name="logout"),
+    path("fake_login/<int:user_id>/", views.fake_login, name="logout"),
 ]

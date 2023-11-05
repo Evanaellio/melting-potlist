@@ -24,9 +24,9 @@ BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG_DISCORD_LOGIN_MOCK = False
-# Enables a mock Discord user when cancelling Discord OAuth, don't turn on in production either!
 DEBUG = False
+# Enables fake login without Discord OAuth, don't turn on in production either!
+ENABLE_FAKE_LOGIN = False
 
 ALLOWED_HOSTS = []
 
@@ -178,7 +178,7 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/discord/login"
 
-SESSION_COOKIE_AGE = timedelta(weeks=3).total_seconds()
+SESSION_COOKIE_AGE = timedelta(days=120).total_seconds()
 
 # Send error logs trough emails (with overrideable default config)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -49,16 +49,6 @@ export default {
       currentMediaPersisted: false
     };
   },
-  computed: {
-    selectedUsers() {
-      const selectedUsers = [];
-      for (const guild of this.guilds) {
-        const userIds = guild.users.selected.map(user => user.id);
-        selectedUsers.push(...userIds);
-      }
-      return selectedUsers;
-    }
-  },
   methods: {
     onSelectUser(user) {
       this.updateUser(user, true);
@@ -78,6 +68,7 @@ export default {
         if (this.currentMediaPersisted) {
           this.persistPlayedMediaAndFetchNext();
         }
+        this.updateStatus();
       });
     },
     persistPlayedMediaAndFetchNext(playedMedia = null) {
@@ -117,6 +108,18 @@ export default {
     sendWebsocketData(data) {
       this.websocket.send(JSON.stringify(data));
     },
+    selectUser(username) {
+      for (const guild of this.guilds) {
+        for (const user of guild.users.all) {
+          if (user.name === username) {
+            if (!guild.users.selected.includes(user)) {
+              guild.users.selected.push(user);
+              this.onSelectUser(user);
+            }
+          }
+        }
+      }
+    },
     onWebsocketMessage(event) {
       console.log("Message from " + this.websocket, event);
 
@@ -124,13 +127,23 @@ export default {
 
       if (data.action === "query_status" && data.from) {
         this.updateStatus(data.from);
+      } else if (data.action == "connect") {
+        this.selectUser(data.username);
       }
     },
     updateStatus(toUser = undefined) {
+      let selectedUsers = []
+      for (const guild of this.guilds) {
+        for (const user of guild.users.selected) {
+          selectedUsers.push(user);
+        }
+      }
+
       this.sendWebsocketData({
         action: "update_status",
         to: toUser,
-        status: this.$refs.mediaPlayer.status()
+        status: this.$refs.mediaPlayer.status(),
+        selectedUsers: selectedUsers,
       });
     }
   },
