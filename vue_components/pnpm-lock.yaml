@@ -23,13 +23,13 @@ overrides:
 
 dependencies:
   '@vue/cli-plugin-babel':
-    specifier: ~4.5.0
+    specifier: ~4.5.15
     version: 4.5.15(@vue/cli-service@4.5.15)(core-js@3.33.2)(vue@3.3.7)
   '@vue/cli-plugin-eslint':
-    specifier: ~4.5.0
+    specifier: ~4.5.15
     version: 4.5.15(@vue/cli-service@4.5.15)(eslint@6.8.0)
   '@vue/cli-service':
-    specifier: ~4.5.0
+    specifier: ~4.5.15
     version: 4.5.15(@vue/compiler-sfc@3.3.7)(vue@3.3.7)
   '@vue/compiler-sfc':
     specifier: ^3.3.7
@@ -41,10 +41,10 @@ dependencies:
     specifier: ^3.33.2
     version: 3.33.2
   eslint:
-    specifier: ^6.7.2
+    specifier: ^6.8.0
     version: 6.8.0
   eslint-plugin-vue:
-    specifier: ^7.0.0
+    specifier: ^7.20.0
     version: 7.20.0(eslint@6.8.0)
   pnpm:
     specifier: ^8.10.2
@@ -56,10 +56,10 @@ dependencies:
     specifier: ^3.3.7
     version: 3.3.7
   vue-multiselect:
-    specifier: ^3.0.0-beta.3
+    specifier: 3.0.0-beta.3
     version: 3.0.0-beta.3
   webpack-bundle-tracker:
-    specifier: ^1.0.0
+    specifier: ^1.4.0
     version: 1.4.0
 
 devDependencies:
@@ -2436,7 +2436,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001304
+      caniuse-lite: 1.0.30001561
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
@@ -2743,7 +2743,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001304
+      caniuse-lite: 1.0.30001561
       electron-to-chromium: 1.4.59
       escalade: 3.1.1
       node-releases: 2.0.1
@@ -2894,13 +2894,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001304
+      caniuse-lite: 1.0.30001561
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: false
 
-  /caniuse-lite@1.0.30001304:
-    resolution: {integrity: sha512-bdsfZd6K6ap87AGqSHJP/s1V+U6Z5lyrcbBu3ovbCCf8cSYpwTtGrCBObMpJqwxfTbLW6YTIdbb1jEeTelcpYQ==}
+  /caniuse-lite@1.0.30001561:
+    resolution: {integrity: sha512-NTt0DNoKe958Q0BE0j0c1V9jbUzhBxHIEJy7asmGrpE0yG63KTV7PLHPnK2E1O9RsQrQ081I3NLuXGS6zht3cw==}
     dev: false
 
   /case-sensitive-paths-webpack-plugin@2.4.0:
@@ -2979,7 +2979,7 @@ packages:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: false
     optional: true
 
@@ -4766,12 +4766,12 @@ packages:
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
-      nan: 2.15.0
+      nan: 2.18.0
     dev: false
     optional: true
 
-  /fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -5816,6 +5816,14 @@ packages:
       minimist: 1.2.8
     dev: false
 
+  /json5@2.2.3:
+    resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
+    engines: {node: '>=6'}
+    hasBin: true
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /jsonfile@4.0.0:
     resolution: {integrity: sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=}
     optionalDependencies:
@@ -5915,14 +5923,14 @@ packages:
       json5: 1.0.1
     dev: false
 
-  /loader-utils@2.0.2:
-    resolution: {integrity: sha512-TM57VeHptv569d/GKh6TAYdzKblwDNiumOdkFnejjD0XwTH87K90w3O7AiJRqdQoXygvi1VQTJTLGhJl7WqA7A==}
+  /loader-utils@2.0.4:
+    resolution: {integrity: sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==}
     engines: {node: '>=8.9.0'}
     requiresBuild: true
     dependencies:
       big.js: 5.2.2
       emojis-list: 3.0.0
-      json5: 2.2.0
+      json5: 2.2.3
     dev: false
     optional: true
 
@@ -6306,8 +6314,8 @@ packages:
       thenify-all: 1.6.0
     dev: false
 
-  /nan@2.15.0:
-    resolution: {integrity: sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==}
+  /nan@2.18.0:
+    resolution: {integrity: sha512-W7tfG7vMOGtD30sHoZSSc/JVYiyDPEyQVso/Zz+/uQd0B0L46gtC+pHha5FFMRpil6fm/AoEcRWyOVi4+E/f8w==}
     requiresBuild: true
     dev: false
     optional: true
@@ -8934,7 +8942,7 @@ packages:
       '@vue/compiler-sfc': 3.3.7
       chalk: 4.1.2
       hash-sum: 2.0.0
-      loader-utils: 2.0.2
+      loader-utils: 2.0.4
       vue: 3.3.7
       webpack: 4.46.0
     dev: false
