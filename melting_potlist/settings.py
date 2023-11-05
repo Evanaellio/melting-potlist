@@ -178,7 +178,7 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/discord/login"
 
-SESSION_COOKIE_AGE = timedelta(weeks=3).total_seconds()
+SESSION_COOKIE_AGE = timedelta(days=120).total_seconds()
 
 # Send error logs trough emails (with overrideable default config)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
