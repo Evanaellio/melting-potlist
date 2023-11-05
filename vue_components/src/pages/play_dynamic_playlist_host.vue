@@ -49,16 +49,6 @@ export default {
       currentMediaPersisted: false
     };
   },
-  computed: {
-    selectedUsers() {
-      const selectedUsers = [];
-      for (const guild of this.guilds) {
-        const userIds = guild.users.selected.map(user => user.id);
-        selectedUsers.push(...userIds);
-      }
-      return selectedUsers;
-    }
-  },
   methods: {
     onSelectUser(user) {
       this.updateUser(user, true);
@@ -78,6 +68,7 @@ export default {
         if (this.currentMediaPersisted) {
           this.persistPlayedMediaAndFetchNext();
         }
+        this.updateStatus();
       });
     },
     persistPlayedMediaAndFetchNext(playedMedia = null) {
@@ -127,10 +118,18 @@ export default {
       }
     },
     updateStatus(toUser = undefined) {
+      let selectedUsers = []
+      for (const guild of this.guilds) {
+        for (const user of guild.users.selected) {
+          selectedUsers.push(user);
+        }
+      }
+
       this.sendWebsocketData({
         action: "update_status",
         to: toUser,
-        status: this.$refs.mediaPlayer.status()
+        status: this.$refs.mediaPlayer.status(),
+        selectedUsers: selectedUsers,
       });
     }
   },
