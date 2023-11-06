@@ -1,5 +1,6 @@
 {% extends "core/navigation.html" %}
 {% load static %}
+{% load django_vite %}
 
 {% block css %}
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
@@ -21,5 +22,9 @@
 {% endblock %}
 
 {% block javascript %}
+    <script type="module">
+      import { mountApp } from "{% vite_asset_url 'src/main.js' %}";
+      mountApp();
+    </script>
     <script>window.context = {{ json_context | safe }};</script>
 {% endblock %}
