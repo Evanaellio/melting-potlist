@@ -17,9 +17,6 @@
 {% endblock %}
 
 {% block javascript %}
-    <script type="module">
-      import mountApp from "{% vite_asset_url 'src/main.js' %}";
-      mountApp();
-    </script>
+    {% vite_asset 'src/main.js' %}
     <script>window.context = {{ json_context | safe }};</script>
 {% endblock %}
