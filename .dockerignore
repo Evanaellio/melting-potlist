@@ -1,6 +1,19 @@
-# Ignore files containing sensitive information 
-docker-compose.yaml
+# Files containing sensitive information
 melting_potlist.yaml
+.env
 
-# Ignore git metadata
+# Git metadata
 .git
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yaml
+docker-compose.example.yaml
+
+# Python virtualenv
+.venv
+
+# Node modules
+./vue_components/node_modules

@@ -16,8 +16,7 @@
     "pnpm": "^8.10.2",
     "vite": "^4.5.0",
     "vue": "^3.3.7",
-    "vue-multiselect": "3.0.0-beta.3",
-    "webpack-bundle-tracker": "^1.4.0"
+    "vue-multiselect": "3.0.0-beta.3"
   },
   "devDependencies": {
     "prettier": "1.19.1"

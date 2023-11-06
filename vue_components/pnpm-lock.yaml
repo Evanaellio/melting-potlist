@@ -46,9 +46,6 @@ dependencies:
   vue-multiselect:
     specifier: 3.0.0-beta.3
     version: 3.0.0-beta.3
-  webpack-bundle-tracker:
-    specifier: ^1.4.0
-    version: 1.4.0
 
 devDependencies:
   prettier:
@@ -1028,22 +1025,6 @@ packages:
       p-locate: 5.0.0
     dev: false
 
-  /lodash.assign@4.2.0:
-    resolution: {integrity: sha1-DZnzzNem0mHRm9rrkkUAXShYCOc=}
-    dev: false
-
-  /lodash.defaults@4.2.0:
-    resolution: {integrity: sha1-0JF4cW/+pN3p5ft7N/bwgCJ0WAw=}
-    dev: false
-
-  /lodash.foreach@4.5.0:
-    resolution: {integrity: sha1-Gmo16s5AEoDH8G3d7DUWWrJ+PlM=}
-    dev: false
-
-  /lodash.get@4.4.2:
-    resolution: {integrity: sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=}
-    dev: false
-
   /lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: false
@@ -1425,16 +1406,6 @@ packages:
       '@vue/runtime-dom': 3.3.7
       '@vue/server-renderer': 3.3.7(vue@3.3.7)
       '@vue/shared': 3.3.7
-    dev: false
-
-  /webpack-bundle-tracker@1.4.0:
-    resolution: {integrity: sha512-5dbAdtS+DbvJfXIXfCytRv5D4I2EWBdBBVOzDMpSa52goTroryWcH4lm3h2qwVqSQEgTTWCkgLGGlZYZmYRM9g==}
-    dependencies:
-      lodash.assign: 4.2.0
-      lodash.defaults: 4.2.0
-      lodash.foreach: 4.5.0
-      lodash.get: 4.4.2
-      strip-ansi: 6.0.1
     dev: false
 
   /which@2.0.2:
