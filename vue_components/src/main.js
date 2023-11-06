@@ -8,7 +8,7 @@ app.component("play-dynamic-playlist-listener", defineAsyncComponent(() => impor
 app.component("create-dynamic-playlist", defineAsyncComponent(() => import("./pages/create_dynamic_playlist.vue")));
 app.component("groups", defineAsyncComponent(() => import("./pages/groups.vue")));
 
-export function mountApp() {
+export default function mountApp() {
     app.config.globalProperties.$window = window;
     window.vue_app = app; // Used to debug vue app in production
     app.mount("#vue_app");
