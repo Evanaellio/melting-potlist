@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "django_yamlconf",
     "rest_framework",
     "widget_tweaks",
-    "webpack_loader",
+    "django_vite",
     "django_user_agents",
     "apps.core",
     "apps.discord_login",
@@ -155,9 +155,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 STATIC_URL = "/content/"
 
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "vue_components" / "dist"
+
 STATICFILES_DIRS = [
     BASE_DIR / "static",
-    BASE_DIR / "vue_components" / "dist",  # Static resources compiled by vue service build (using Webpack)
+    DJANGO_VITE_ASSETS_PATH,
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

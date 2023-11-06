@@ -3,21 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
-    "@vue/cli-plugin-babel": "~4.5.15",
-    "@vue/cli-plugin-eslint": "~4.5.15",
-    "@vue/cli-service": "~4.5.15",
-    "@vue/compiler-sfc": "^3.3.7",
-    "babel-eslint": "^10.1.0",
-    "core-js": "^3.33.2",
-    "eslint": "^6.8.0",
-    "eslint-plugin-vue": "^7.20.0",
+    "@vitejs/plugin-vue": "^4.4.0",
+    "django-vite-plugin": "^2.0.4",
+    "eslint": "^8.53.0",
+    "eslint-plugin-vue": "^9.18.1",
     "pnpm": "^8.10.2",
-    "regenerator-runtime": "^0.13.9",
+    "vite": "^4.5.0",
     "vue": "^3.3.7",
     "vue-multiselect": "3.0.0-beta.3",
     "webpack-bundle-tracker": "^1.4.0"
@@ -34,9 +31,6 @@
       "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
     "rules": {}
   },
   "browserslist": [

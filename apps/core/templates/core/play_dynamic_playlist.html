@@ -1,6 +1,5 @@
 {% extends "core/navigation.html" %}
 {% load static %}
-{% load render_bundle from webpack_loader %}
 
 {% block css %}
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
@@ -19,8 +18,6 @@
             <play-dynamic-playlist-listener></play-dynamic-playlist-listener>
         {% endif %}
     </div>
-
-    {% render_bundle 'app' %}
 {% endblock %}
 
 {% block javascript %}

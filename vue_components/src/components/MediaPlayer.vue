@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import VueTitle from "./VueTitle";
+import VueTitle from "/src/components/VueTitle.vue";
 
 export default {
   components: {
