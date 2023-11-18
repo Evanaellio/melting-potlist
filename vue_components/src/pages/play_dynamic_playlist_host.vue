@@ -19,7 +19,7 @@
   <MediaPlayer
       ref="mediaPlayer"
       :next-media-prop="nextMedia"
-      :media-playing-event-timing="1"
+      :media-playing-event-timing="8"
       :is-mobile="this.$window.context.isMobile"
       @media-playing="onMediaPlaying"
       @media-started="onMediaStarted"

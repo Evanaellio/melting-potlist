@@ -241,11 +241,6 @@ export default {
         nextMedia: this.nextMedia,
         elapsedTime: this.$refs.audio_player.currentTime
       });
-      navigator.mediaSession.setPositionState({
-        duration: this.$refs.audio_player.duration,
-        playbackRate: this.$refs.audio_player.playbackRate,
-        position: this.$refs.audio_player.currentTime,
-      });
     },
     status() {
       return {
@@ -265,6 +260,13 @@ export default {
       console.log("Start initial playback", this.$refs.audio_player.paused);
       this.initialPlaybackStarted = true;
       this.$emit("initial-playback-started");
+    },
+    updateMediaSession() {
+      navigator.mediaSession.setPositionState({
+        duration: this.$refs.audio_player.duration,
+        playbackRate: this.$refs.audio_player.playbackRate,
+        position: this.$refs.audio_player.currentTime,
+      });
     }
   },
   mounted() {
@@ -291,6 +293,7 @@ export default {
         this.$refs.audio_player.currentTime = this.$refs.audio_player.currentTime + 10;
       });
     }
+    setInterval(this.updateMediaSession, 1000);
   },
 };
 </script>
