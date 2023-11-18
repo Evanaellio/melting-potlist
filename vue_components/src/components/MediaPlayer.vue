@@ -208,6 +208,7 @@ export default {
       }
       navigator.mediaSession.metadata = new window.MediaMetadata({
         title: this.currentMedia.title,
+        artist: this.currentMedia.artist,
         artwork: [{src: this.currentMedia.thumbnail}]
       });
     },
@@ -240,6 +241,11 @@ export default {
         nextMedia: this.nextMedia,
         elapsedTime: this.$refs.audio_player.currentTime
       });
+      navigator.mediaSession.setPositionState({
+        duration: this.$refs.audio_player.duration,
+        playbackRate: this.$refs.audio_player.playbackRate,
+        position: this.$refs.audio_player.currentTime,
+      });
     },
     status() {
       return {
@@ -270,6 +276,20 @@ export default {
     }
     if (this.isMobile) {
       this.audioOnly = true;
+    }
+    if (!this.remoteStatus) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        this.$refs.audio_player.currentTime = 0;
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        this.$refs.audio_player.currentTime = this.$refs.audio_player.duration;
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        this.$refs.audio_player.currentTime = this.$refs.audio_player.currentTime - 10;
+      });
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        this.$refs.audio_player.currentTime = this.$refs.audio_player.currentTime + 10;
+      });
     }
   },
 };
