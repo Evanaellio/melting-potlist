@@ -1,6 +1,7 @@
 <template>
   <vue-title v-if="currentMedia" :title="currentMedia.title"></vue-title>
   <div v-if="currentMedia">
+    <canvas v-if="!audioOnly" ref="backlight" id="backlight"></canvas>
     <video
         v-if="!audioOnly"
         v-show="initialPlaybackStarted"
@@ -267,6 +268,17 @@ export default {
         playbackRate: this.$refs.audio_player.playbackRate,
         position: this.$refs.audio_player.currentTime,
       });
+    },
+    updateBacklight() {
+      if (this.$refs.video_player) {
+        const video = this.$refs.video_player
+        const backlight = this.$refs.backlight
+        const ctx = backlight.getContext('2d');
+        ctx.filter='opacity(5%)';
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, backlight.width, backlight.height);
+        ctx.restore();
+      }
     }
   },
   mounted() {
@@ -278,6 +290,8 @@ export default {
     }
     if (this.isMobile) {
       this.audioOnly = true;
+    } else {
+      setInterval(this.updateBacklight, 100);
     }
     if (!this.remoteStatus) {
       navigator.mediaSession.setActionHandler('previoustrack', () => {
