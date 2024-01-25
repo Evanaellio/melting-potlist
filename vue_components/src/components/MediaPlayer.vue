@@ -1,7 +1,7 @@
 <template>
   <vue-title v-if="currentMedia" :title="currentMedia.title"></vue-title>
   <div v-if="currentMedia">
-    <canvas v-if="!audioOnly" ref="backlight" id="backlight"></canvas>
+    <canvas v-if="!audioOnly && enableBacklight" ref="backlight" id="backlight"></canvas>
     <video
         v-if="!audioOnly"
         v-show="initialPlaybackStarted"
@@ -147,7 +147,8 @@ export default {
       audioOnly: false,
       mediaPlayingInterval: null,
       mediaInProgress: false,
-      initialPlaybackStarted: false
+      initialPlaybackStarted: false,
+      enableBacklight: false
     };
   },
   methods: {
@@ -270,9 +271,9 @@ export default {
       });
     },
     updateBacklight() {
-      if (this.$refs.video_player) {
-        const video = this.$refs.video_player
-        const backlight = this.$refs.backlight
+      if (this.enableBacklight && this.$refs.video_player) {
+        const video = this.$refs.video_player;
+        const backlight = this.$refs.backlight;
         const ctx = backlight.getContext('2d');
         ctx.filter='opacity(5%)';
         ctx.globalCompositeOperation = 'source-over';
@@ -292,6 +293,12 @@ export default {
       this.audioOnly = true;
     } else {
       setInterval(this.updateBacklight, 100);
+      window.addEventListener("keypress", e => {
+        if (e.code === "KeyB") {
+          this.enableBacklight = !this.enableBacklight;
+          console.log("Backlight enabled = ", this.enableBacklight);
+        }
+      });
     }
     if (!this.remoteStatus) {
       navigator.mediaSession.setActionHandler('previoustrack', () => {
