@@ -74,7 +74,6 @@ export default {
     });
 
     window.addEventListener("keypress", e => {
-      console.log(e.code)
       if (e.code === "KeyR") {
         this.queryStatus();
       }
