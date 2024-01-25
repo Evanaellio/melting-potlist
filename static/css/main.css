@@ -136,3 +136,14 @@ body {
     background-color: var(--discord-blue);
     border-color: var(--discord-blue);
 }
+
+canvas#backlight {
+    position: absolute;
+    width: 1250px;
+    height: 675px;
+    transform: scale(1.2);
+    -webkit-filter: blur(100px);
+    filter: blur(100px);
+    opacity: 0.75;
+    z-index: -1;
+}
