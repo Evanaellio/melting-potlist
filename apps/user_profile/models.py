@@ -1,10 +1,8 @@
 import datetime
 import random
-from collections import defaultdict
 from typing import List, Optional
 
 import django
-import pytz
 from annoying.fields import AutoOneToOneField
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
