@@ -234,6 +234,10 @@ export default {
           currentMedia: this.currentMedia
         });
         this.mediaInProgress = true;
+
+        // Fix for permanent subtitle issue
+        this.$refs.video_player.textTracks[0].mode = "hidden";
+        this.$refs.video_player.textTracks[0].mode = "showing";
       }
     },
 
