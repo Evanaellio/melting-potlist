@@ -236,8 +236,10 @@ export default {
         this.mediaInProgress = true;
 
         // Fix for permanent subtitle issue
-        this.$refs.video_player.textTracks[0].mode = "hidden";
-        this.$refs.video_player.textTracks[0].mode = "showing";
+        if(this.$refs.video_player && this.$refs.video_player.textTracks) {
+          this.$refs.video_player.textTracks[0].mode = "hidden";
+          this.$refs.video_player.textTracks[0].mode = "showing";
+        }
       }
     },
 
@@ -268,11 +270,13 @@ export default {
       this.$emit("initial-playback-started");
     },
     updateMediaSession() {
-      navigator.mediaSession.setPositionState({
-        duration: this.$refs.audio_player.duration,
-        playbackRate: this.$refs.audio_player.playbackRate,
-        position: this.$refs.audio_player.currentTime,
-      });
+      if(this.$refs.audio_player) {
+        navigator.mediaSession.setPositionState({
+          duration: this.$refs.audio_player.duration,
+          playbackRate: this.$refs.audio_player.playbackRate,
+          position: this.$refs.audio_player.currentTime,
+        });
+      }
     },
     updateBacklight() {
       if (this.enableBacklight && this.$refs.video_player) {
