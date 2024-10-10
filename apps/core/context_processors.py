@@ -3,16 +3,10 @@ from django.conf import settings
 from .views import make_user
 
 
-def user(request: HttpRequest):
+def discord_user(request: HttpRequest):
     context = {}
 
     if request.user.is_authenticated:
-        context["user"] = make_user(request.user.discord)
+        context["discord_user"] = make_user(request.user.discord)
 
     return context
-
-
-def settings_processor(request: HttpRequest):
-    return {
-        "VERSION": settings.VERSION,
-    }
