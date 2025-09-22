@@ -23,6 +23,7 @@ def make_track_uri(video):
     track_uri.deleted = not video["channel"]
 
     # Retry to fetch unavailable track info to check if it's still unavailable
+    # Note: the "unavailable" flag is not added during playlist sync, but when the track failed to load during play.
     if track_uri.unavailable:
         with yt_dlp.YoutubeDL(YTDL_OPTS) as ytdl:
             track_uri.unavailable = not track_uri.deleted and not ytdl.extract_info(
