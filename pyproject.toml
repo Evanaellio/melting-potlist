@@ -27,6 +27,7 @@ uvicorn = {extras = ["standard"], version = "^0.36.0"}
 channels = "~3.0.5"
 channels-redis = "~3.4.1"
 unidecode = "^1.3.6"
+setuptools = "^82.0.0"
 
 [tool.poetry.group.dev]
 optional = true
