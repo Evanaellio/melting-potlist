@@ -9,13 +9,13 @@
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
-    "@vitejs/plugin-vue": "^4.4.0",
+    "@vitejs/plugin-vue": "^4.6.2",
     "django-vite-plugin": "^2.0.4",
-    "eslint": "^8.53.0",
-    "eslint-plugin-vue": "^9.18.1",
-    "pnpm": "^8.10.2",
-    "vite": "^4.5.0",
-    "vue": "^3.3.7",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.33.0",
+    "pnpm": "^8.15.9",
+    "vite": "^4.5.14",
+    "vue": "^3.5.35",
     "vue-multiselect": "3.0.0-beta.3"
   },
   "devDependencies": {
