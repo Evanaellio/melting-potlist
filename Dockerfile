@@ -4,7 +4,7 @@ ENV NODE_ENV=production
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
 # Install NPM packages using PNPM
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 WORKDIR /build/vue_components
 COPY ["./vue_components/package.json", "./vue_components/pnpm-lock.yaml",  "./"]
 RUN pnpm install --prod

@@ -38,8 +38,8 @@ importers:
         specifier: ^9.33.0
         version: 9.33.0(eslint@8.57.1)
       pnpm:
-        specifier: ^8.15.9
-        version: 8.15.9
+        specifier: ^10.33.4
+        version: 10.33.4
       vite:
         specifier: ^4.5.14
         version: 4.5.14
@@ -665,9 +665,9 @@ packages:
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
-  pnpm@8.15.9:
-    resolution: {integrity: sha512-SZQ0ydj90aJ5Tr9FUrOyXApjOrzuW7Fee13pDzL0e1E6ypjNXP0AHDHw20VLw4BO3M1XhQHkyik6aBYWa72fgQ==}
-    engines: {node: '>=16.14'}
+  pnpm@10.33.4:
+    resolution: {integrity: sha512-HGezs1my1AgRm6HtKJ80uPw8aHNBK+xv0mT73IJInlEPy+y5zp0i2ufzt2Jp2EQQRgFL3KU7mXnNelYa1jG4AA==}
+    engines: {node: '>=18.12'}
     hasBin: true
 
   postcss-selector-parser@6.1.2:
@@ -1446,7 +1446,7 @@ snapshots:
 
   picocolors@1.1.1: {}
 
-  pnpm@8.15.9: {}
+  pnpm@10.33.4: {}
 
   postcss-selector-parser@6.1.2:
     dependencies:

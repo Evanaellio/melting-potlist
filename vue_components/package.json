@@ -13,7 +13,7 @@
     "django-vite-plugin": "^2.0.4",
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.33.0",
-    "pnpm": "^8.15.9",
+    "pnpm": "^10.33.4",
     "vite": "^4.5.14",
     "vue": "^3.5.34",
     "vue-multiselect": "3.0.0-beta.3"
