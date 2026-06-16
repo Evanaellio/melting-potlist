@@ -19,8 +19,8 @@ def make_track_uri(video):
         uri=f'youtube:video:{video["id"]}',
     )
 
-    # Videos that are private or deleted appear without a channel
-    track_uri.deleted = not video["channel"]
+    # Videos that are private or deleted appear without a title
+    track_uri.deleted = video["title"] is None
 
     # Retry to fetch unavailable track info to check if it's still unavailable
     # Note: the "unavailable" flag is not added during playlist sync, but when the track failed to load during play.
@@ -31,11 +31,8 @@ def make_track_uri(video):
             )
 
     if not track_uri.deleted and not track_uri.track:
-        artist_without_topic = re.sub(" - [Tt]opic$", "", video["channel"])
-
         track_uri.track = Track.objects.create(
             title=video["title"],
-            artist=artist_without_topic,
             duration=timedelta(seconds=int(video["duration"])),
         )
 

@@ -210,7 +210,6 @@ export default {
       }
       navigator.mediaSession.metadata = new window.MediaMetadata({
         title: this.currentMedia.title,
-        artist: this.currentMedia.artist,
         artwork: [{src: this.currentMedia.thumbnail}]
       });
     },

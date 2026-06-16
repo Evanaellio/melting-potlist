@@ -42,7 +42,6 @@ def fetch_media(media_url):
 
     duration = int(media["duration"])
     title = media["title"]
-    artist = media["channel"]
 
     song_formats = list(media["formats"])
 
@@ -60,7 +59,6 @@ def fetch_media(media_url):
         "audio": audio["url"] if "manifest_url" not in audio else audio["fragment_base_url"],
         "video": video["url"] if "manifest_url" not in video else video["fragment_base_url"],
         "title": title,
-        "artist": artist,
         "duration": duration,
         "url": media_url,
         "subtitles_url": f"{reverse('core:subtitles')}?title={quote(title)}&duration={duration}",
