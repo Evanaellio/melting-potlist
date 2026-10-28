@@ -1,4 +1,4 @@
-FROM node:lts as vite_build
+FROM node:lts AS vite_build
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--openssl-legacy-provider
@@ -15,7 +15,7 @@ COPY ./vue_components ./
 RUN pnpm run build
 
 
-FROM python:3.12 as django_app
+FROM python:3.12 AS django_app
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
